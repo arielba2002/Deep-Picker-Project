@@ -3,9 +3,13 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import text
 from . import crud, models, schemas, database
+from .database import Base, engine
 
 # Initialize the FastAPI app
 app = FastAPI()
+
+# Create the tables in the database
+models.Base.metadata.create_all(bind=engine)
 
 # Dependency to get the database session
 def get_db():
