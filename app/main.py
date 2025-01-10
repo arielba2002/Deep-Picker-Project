@@ -7,7 +7,7 @@ from .config.database import Base, engine
 app = FastAPI()
 
 # Create the tables in the database
-from .models import user_model
+from .backend.models import user_model
 user_model.Base.metadata.create_all(bind=engine)
 
 # Dependency to get the database session
@@ -21,7 +21,7 @@ def get_db():
 
 
 # Include the user routes
-from .routes import user_routes
+from .backend.routes import user_routes
 app.include_router(user_routes.router)
 
 
