@@ -1,3 +1,4 @@
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -37,3 +38,7 @@ def test_connection(db: Session = Depends(get_db)):
     except SQLAlchemyError as e:
         # Handle any database connection error
         raise HTTPException(status_code=500, detail=f"Database connection failed: {str(e)}")
+
+def start():
+    """Launched with 'poetry run start' at root level """
+    uvicorn.run("app.main:app", host="localhost", port=8888, reload=True)

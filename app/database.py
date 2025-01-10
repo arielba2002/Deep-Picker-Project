@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from . import models
 
 # Database URL
-DATABASE_URL = "postgresql://myuser:mypassword@localhost:5432/mydb"
+DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/mydb"
 
 # Database connection (async)
 database = Database(DATABASE_URL)
