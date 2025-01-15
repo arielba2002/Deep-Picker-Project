@@ -11,4 +11,4 @@ class User(UserBase):
     id: int
 
     class Config:
-        orm_mode = True  # This tells Pydantic to treat SQLAlchemy models as dicts
+        from_attributes = True
