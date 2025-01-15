@@ -1,4 +1,4 @@
-# FastAPI PostgreSQL Setup
+# FastAPI PostgreSQL
 
 This project uses **FastAPI** for the backend and **PostgreSQL** as the database. Follow the steps below to set up the development environment, configure PostgreSQL, and run the backend server.
 
@@ -10,13 +10,12 @@ Before you begin, make sure you have the following installed:
 
 - **Docker**: For running PostgreSQL in a container.
 - **Python**: Version 3.7 or above.
-- **pip**: Python package manager.
-- **Uvicorn**: ASGI server for FastAPI.
+- **Poetry**: Dependency management and packaging tool for Python.
 
 If you don’t have these tools installed, refer to the official documentation:
 - [Docker installation](https://docs.docker.com/get-docker/)
 - [Python installation](https://www.python.org/downloads/)
-- [Uvicorn installation](https://www.uvicorn.org/)
+- [Poetry installation](https://python-poetry.org/docs/)
 
 ---
 
@@ -68,7 +67,7 @@ If you don’t have these tools installed, refer to the official documentation:
    ```bash
    poetry run start
    ```
-This will start the FastAPI application with the command defined in the pyproject.toml file.
+   This will start the FastAPI application with the command defined in the pyproject.toml file.
 
 
 
@@ -79,4 +78,15 @@ This will start the FastAPI application with the command defined in the pyprojec
    ```
 
 
+# Frontend - React
+To get the frontend up and running, From the frontend folder, Follow the steps below:
 
+## Step 1: Install Dependencies
+   ```bash
+   npm install
+   ```
+
+## Step 2: Start the Server
+   ```bash
+   npm start
+   ```
