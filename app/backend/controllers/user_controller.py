@@ -7,3 +7,7 @@ def create_user(user: user_schema.UserCreate, db: Session):
 
 def read_users(skip: int, limit: int, db: Session):
     return user_services.get_users(db=db, skip=skip, limit=limit)
+
+# Add this to app/backend/controllers/user_controller.py
+def get_user_by_id(user_id: int, db: Session):
+    return user_services.get_user_by_id(db=db, user_id=user_id)
