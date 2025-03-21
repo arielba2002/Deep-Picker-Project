@@ -1,0 +1,27 @@
+/* src/App.css */
+
+.app-container {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr; /* 3-column layout */
+  height: 100vh;
+  margin: 0;
+}
+
+/* Left Panel */
+.left-panel {
+  background-color: #f0f0f0;
+  padding: 1rem;
+}
+
+/* Center Panel */
+.court-panel {
+  background-color: #ffffff;
+  padding: 1rem;
+}
+
+/* Right Panel */
+.right-panel {
+  background-color: #fafafa;
+  padding: 1rem;
+}
+
