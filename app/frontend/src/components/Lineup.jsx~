@@ -1,0 +1,34 @@
+// src/components/Lineup.jsx
+import React from "react";
+import "./Lineup.css"; // Import the CSS for styling
+
+const players = [
+  { id: 1, name: "PG", bottom: "35%", left: "50%", image: '../deni.png' },
+  { id: 2, name: "SG", bottom: "48%", left: "80%", image: '../deni.png' },
+  { id: 3, name: "SF", bottom: "82%", left: "30%", image: '../deni.png' },
+  { id: 4, name: "PF", bottom: "82%", left: "60%", image: '../deni.png' },
+  { id: 5, name: "C",  bottom: "70%", left: "38%", image: '../deni.png' },
+];
+
+function Lineup() {
+  return (
+    <div className="lineup-container">
+      {players.map((player) => (
+        <div
+          key={player.id}
+          className="player"
+          style={{ bottom: player.bottom, left: player.left }}
+        >
+          <img
+            src={player.image}
+            alt={player.name}
+            className="player-image"
+          />
+        </div>
+      ))}
+    </div>
+  );	
+}
+
+export default Lineup;
+
