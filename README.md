@@ -30,32 +30,11 @@ If you don’t have these tools installed, refer to the official documentation:
 
 2. **Run PostgreSQL Container**
    ```bash
-   docker run --name my-postgres -e POSTGRES_USER=myuser -e POSTGRES_PASSWORD=mypassword -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
+   docker run --name my-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=mydb -p 5432:5432 -d postgres
 
 ## Step 2: Set Up Python Backend
 
-1. **Create Virtual Environment**
-  From the root of the project, run the following command to create a new virtual environment:
-   ```bash
-   python -m venv ./venv
-   ```
-   This command will create a new directory called venv in the current directory, which will contain the virtual environment for your project.
-
-2. **Activate Virtual Environment**
-   - **Linux**:
-     ```bash
-     source venv/bin/activate
-     ```
-   - **Windows (Command Prompt)**:
-     ```bash
-     venv\Scripts ctivate
-     ```
-   - **Windows (Git Bash)**:
-     ```bash
-     source venv/Scripts/activate
-     ```
-
-3. **Install Required Libraries**
+1. **Install Required Libraries**
    To install the project dependencies, use Poetry to install them:
    ```bash
    poetry install
@@ -68,14 +47,6 @@ If you don’t have these tools installed, refer to the official documentation:
    poetry run start
    ```
    This will start the FastAPI application with the command defined in the pyproject.toml file.
-
-
-
-## Step 4: Deactivate the virtual environment
-**When you're done working in your project, you can deactivate the virtual environment by running:**
-   ```bash
-   deactivate
-   ```
 
 
 # Frontend - React
