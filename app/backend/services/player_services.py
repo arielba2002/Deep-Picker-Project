@@ -1,6 +1,6 @@
 # File: ./Deep-Picker-Project/app/backend/services/player_services.py
-from ..config.constants import PLAYERS_DATA
-from ..schemas import player_schema
+from config.constants import PLAYERS_DATA
+from schemas import player_schema
 from typing import List
 
 def get_all_players():

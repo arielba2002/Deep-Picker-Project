@@ -37,6 +37,7 @@ If you don’t have these tools installed, refer to the official documentation:
 1. **Install Required Libraries**
    To install the project dependencies, use Poetry to install them:
    ```bash
+   cd app/backend/
    poetry install
    ```
    This will install all the necessary dependencies as defined in the pyproject.toml file.

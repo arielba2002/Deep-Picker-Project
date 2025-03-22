@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from ..schemas import user_schema
-from ..services import user_services
+from schemas import user_schema
+from services import user_services
 
 def create_user(user: user_schema.UserCreate, db: Session):
     return user_services.create_user(db=db, user=user)

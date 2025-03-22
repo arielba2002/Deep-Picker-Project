@@ -1,8 +1,8 @@
 # File: ./Deep-Picker-Project/app/backend/routes/player_routes.py
 from fastapi import APIRouter, Query
 from typing import List
-from ..schemas import player_schema
-from ..controllers import player_controller
+from schemas import player_schema
+from controllers import player_controller
 
 router = APIRouter()
 

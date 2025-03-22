@@ -1,6 +1,6 @@
 # File: ./Deep-Picker-Project/app/backend/controllers/player_controller.py
-from ..services import player_services
-from ..schemas import player_schema
+from services import player_services
+from schemas import player_schema
 from typing import List
 
 def get_all_players():

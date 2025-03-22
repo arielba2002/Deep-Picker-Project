@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from .config.database import init_db
+from config.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 
 # Constants (moved to the top for better maintainability)
@@ -27,14 +27,14 @@ app.add_middleware(
 # Initialize database
 init_db()
 
-# Include routes
-from .routes import user_routes
+# Change to absolute imports
+from routes import user_routes
 app.include_router(user_routes.router, prefix="/api/v1", tags=["users"])
 
-from .routes import player_routes
+from routes import player_routes
 app.include_router(player_routes.router, prefix="/api/v1", tags=["players"])
 
 
 def start():
     """Launched with 'poetry run start' at root level"""
-    uvicorn.run("app.backend.main:app", host=HOST, port=PORT, reload=True)
+    uvicorn.run("main:app", host=HOST, port=PORT, reload=True)

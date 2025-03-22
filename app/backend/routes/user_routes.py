@@ -1,9 +1,9 @@
 # File: ./Deep-Picker-Project/app/backend/routes/user_routes.py
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Path
 from sqlalchemy.orm import Session
-from ..schemas import user_schema
-from ..controllers import user_controller
-from ..config.database import get_db
+from schemas import user_schema
+from controllers import user_controller
+from config.database import get_db
 from typing import List
 
 router = APIRouter()

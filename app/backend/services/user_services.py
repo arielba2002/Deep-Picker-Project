@@ -1,7 +1,7 @@
-from ..schemas import user_schema
+from schemas import user_schema
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
-from ..models import user_model
+from models import user_model
 from fastapi import HTTPException, status
 
 def create_user(db: Session, user: user_schema.UserCreate):

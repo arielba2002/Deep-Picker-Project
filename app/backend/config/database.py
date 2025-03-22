@@ -21,7 +21,7 @@ Base = declarative_base()
 def init_db():
     """Initialize the database by creating all tables defined in the ORM models."""
     # Import models here to avoid circular imports
-    from ..models import user_model
+    from models import user_model
     Base.metadata.create_all(bind=engine)
 
 # Use lru_cache for better performance when getting DB sessions
