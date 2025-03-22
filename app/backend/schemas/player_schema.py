@@ -38,6 +38,7 @@ class Player(PlayerBase):
     personalFouls: int
     points: int
     playerId: str
+    image: str
     
     class Config:
         from_attributes = True
@@ -46,7 +47,7 @@ class PlayerSuggestion(BaseModel):
     id: int
     playerName: str
     team: str
-    imageUrl: str 
+    image: str 
 
 class PredictionRequest(BaseModel):
     player_ids: List[int]
