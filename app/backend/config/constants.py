@@ -31,7 +31,8 @@ PLAYERS_DATA = [
         "points": 189,
         "team": "WAS",
         "season": 2024,
-        "playerId": "gillan01"
+        "playerId": "gillan01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1628385.png"
     },
     {
         "id": 18120,
@@ -65,7 +66,8 @@ PLAYERS_DATA = [
         "points": 532,
         "team": "WAS",
         "season": 2024,
-        "playerId": "coulibi01"
+        "playerId": "coulibi01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630571.png"
     },
     {
         "id": 18334,
@@ -99,7 +101,8 @@ PLAYERS_DATA = [
         "points": 1070,
         "team": "WAS",
         "season": 2024,
-        "playerId": "kispeco01"
+        "playerId": "kispeco01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630541.png"
     },
     {
         "id": 18195,
@@ -133,7 +136,8 @@ PLAYERS_DATA = [
         "points": 490,
         "team": "WAS",
         "season": 2024,
-        "playerId": "gaffoda01"
+        "playerId": "gaffoda01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1629655.png"
     },
     {
         "id": 18198,
@@ -167,7 +171,8 @@ PLAYERS_DATA = [
         "points": 181,
         "team": "WAS",
         "season": 2024,
-        "playerId": "gallida01"
+        "playerId": "gallida01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/201568.png"
     },
     {
         "id": 18705,
@@ -201,7 +206,8 @@ PLAYERS_DATA = [
         "points": 134,
         "team": "WAS",
         "season": 2024,
-        "playerId": "wrighde01"
+        "playerId": "wrighde01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1626153.png"
     },
     {
         "id": 18000,
@@ -235,7 +241,8 @@ PLAYERS_DATA = [
         "points": 1102,
         "team": "WAS",
         "season": 2024,
-        "playerId": "avdijde01"
+        "playerId": "avdijde01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630174.png"
     },
     {
         "id": 18485,
@@ -269,7 +276,8 @@ PLAYERS_DATA = [
         "points": 207,
         "team": "WAS",
         "season": 2024,
-        "playerId": "omorueu01"
+        "playerId": "omorueu01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630564.png"
     },
     {
         "id": 18143,
@@ -303,7 +311,8 @@ PLAYERS_DATA = [
         "points": 2,
         "team": "WAS",
         "season": 2024,
-        "playerId": "diallha01"
+        "playerId": "diallha01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1628977.png"
     },
     {
         "id": 18095,
@@ -337,7 +346,8 @@ PLAYERS_DATA = [
         "points": 251,
         "team": "WAS",
         "season": 2024,
-        "playerId": "butleja02"
+        "playerId": "butleja02",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630542.png"
     },
     {
         "id": 18135,
@@ -371,7 +381,8 @@ PLAYERS_DATA = [
         "points": 152,
         "team": "WAS",
         "season": 2024,
-        "playerId": "davisjo06"
+        "playerId": "davisjo06",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630543.png"
     },
     {
         "id": 18507,
@@ -405,7 +416,8 @@ PLAYERS_DATA = [
         "points": 1356,
         "team": "WAS",
         "season": 2024,
-        "playerId": "poolejo01"
+        "playerId": "poolejo01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1629673.png"
     },
     {
         "id": 18036,
@@ -439,7 +451,8 @@ PLAYERS_DATA = [
         "points": 74,
         "team": "WAS",
         "season": 2024,
-        "playerId": "bernaju01"
+        "playerId": "bernaju01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630544.png"
     },
     {
         "id": 18108,
@@ -473,7 +486,8 @@ PLAYERS_DATA = [
         "points": 89,
         "team": "WAS",
         "season": 2024,
-        "playerId": "champju01"
+        "playerId": "champju01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630545.png"
     },
     {
         "id": 18342,
@@ -507,7 +521,8 @@ PLAYERS_DATA = [
         "points": 1553,
         "team": "WAS",
         "season": 2024,
-        "playerId": "kuzmaky01"
+        "playerId": "kuzmaky01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1628398.png"
     },
     {
         "id": 18572,
@@ -541,7 +556,8 @@ PLAYERS_DATA = [
         "points": 327,
         "team": "WAS",
         "season": 2024,
-        "playerId": "shamela01"
+        "playerId": "shamela01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1629013.png"
     },
     {
         "id": 18006,
@@ -575,7 +591,8 @@ PLAYERS_DATA = [
         "points": 318,
         "team": "WAS",
         "season": 2024,
-        "playerId": "baglema01"
+        "playerId": "baglema01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1628963.png"
     },
     {
         "id": 18455,
@@ -609,7 +626,8 @@ PLAYERS_DATA = [
         "points": 95,
         "team": "WAS",
         "season": 2024,
-        "playerId": "muscami01"
+        "playerId": "muscami01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/203488.png"
     },
     {
         "id": 18008,
@@ -643,7 +661,8 @@ PLAYERS_DATA = [
         "points": 168,
         "team": "WAS",
         "season": 2024,
-        "playerId": "baldwpa01"
+        "playerId": "baldwpa01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630546.png"
     },
     {
         "id": 18278,
@@ -677,6 +696,7 @@ PLAYERS_DATA = [
         "points": 121,
         "team": "WAS",
         "season": 2024,
-        "playerId": "holmeri01"
+        "playerId": "holmeri01",
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/203468.png"
     }
 ]

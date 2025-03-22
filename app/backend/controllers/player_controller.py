@@ -24,3 +24,16 @@ def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSugg
         List of player suggestions matching the prefix
     """
     return player_services.search_players(prefix, limit)
+
+
+def predict_team_score(player_ids: List[int]) -> int:
+    """
+    Predict the score for a team composed of the specified players.
+    
+    Args:
+        player_ids: List of player IDs in the team
+        
+    Returns:
+        Predicted score
+    """
+    return player_services.predict_score(player_ids)

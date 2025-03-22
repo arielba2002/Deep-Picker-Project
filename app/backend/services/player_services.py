@@ -12,6 +12,7 @@ def get_all_players():
     """
     return PLAYERS_DATA
 
+# In services/player_services.py
 def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSuggestion]:
     """
     Search players by name prefix.
@@ -35,7 +36,8 @@ def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSugg
                 player_schema.PlayerSuggestion(
                     id=player["id"],
                     playerName=player["playerName"],
-                    team=player["team"]
+                    team=player["team"],
+                    image=player["image"]  # Add this line
                 )
             )
             
@@ -43,3 +45,23 @@ def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSugg
                 break
                 
     return matches
+
+
+def predict_score(player_ids: List[int]) -> int:
+    """
+    Generate a prediction score based on player IDs.
+    This is a dummy implementation that returns a fixed value.
+    
+    Args:
+        player_ids: List of player IDs to use for prediction
+        
+    Returns:
+        Predicted score as an integer
+    """
+    # Validate that exactly 8 players are provided
+    if len(player_ids) != 8:
+        raise ValueError("Exactly 8 player IDs are required for prediction")
+        
+    # Dummy implementation - just returns a fixed value
+    # In a real implementation, this would use a model to predict the score
+    return 105

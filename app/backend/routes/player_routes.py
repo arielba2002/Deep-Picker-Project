@@ -42,3 +42,29 @@ def search_players(
         List of player suggestions matching the prefix
     """
     return player_controller.search_players(prefix, limit)
+
+
+@router.post(
+    "/players/predict-score/",
+    response_model=player_schema.PredictionResponse,
+    summary="Predict team score",
+    description="Predicts the score for a team composed of 8 specified players"
+)
+def predict_score(request: player_schema.PredictionRequest):
+    """
+    Predict the score for a team based on 8 player IDs.
+    
+    Args:
+        request: PredictionRequest containing player_ids
+        
+    Returns:
+        PredictionResponse with the predicted score
+    """
+    if len(request.player_ids) != 8:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Exactly 8 player IDs are required"
+        )
+        
+    predicted_score = player_controller.predict_team_score(request.player_ids)
+    return player_schema.PredictionResponse(predicted_score=predicted_score)
