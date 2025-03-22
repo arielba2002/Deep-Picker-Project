@@ -592,7 +592,7 @@ PLAYERS_DATA = [
         "team": "WAS",
         "season": 2024,
         "playerId": "baglema01",
-        "image": "https://cdn.nba.com/headshots/nba/latest/1040x760/1628963.png"
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1628963.png"
     },
     {
         "id": 18455,
@@ -627,7 +627,7 @@ PLAYERS_DATA = [
         "team": "WAS",
         "season": 2024,
         "playerId": "muscami01",
-        "image": "https://cdn.nba.com/headshots/nba/latest/1040x760/203488.png"
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/203488.png"
     },
     {
         "id": 18008,
@@ -662,7 +662,7 @@ PLAYERS_DATA = [
         "team": "WAS",
         "season": 2024,
         "playerId": "baldwpa01",
-        "image": "https://cdn.nba.com/headshots/nba/latest/1040x760/1631116.png"
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/1630546.png"
     },
     {
         "id": 18278,
@@ -697,6 +697,6 @@ PLAYERS_DATA = [
         "team": "WAS",
         "season": 2024,
         "playerId": "holmeri01",
-        "image": "https://cdn.nba.com/headshots/nba/latest/1040x760/1626158.png"
+        "image": "https://cdn.nba.com/headshots/nba/latest/260x190/203468.png"
     }
 ]
