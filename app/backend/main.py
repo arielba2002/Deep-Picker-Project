@@ -31,6 +31,10 @@ init_db()
 from .routes import user_routes
 app.include_router(user_routes.router, prefix="/api/v1", tags=["users"])
 
+from .routes import player_routes
+app.include_router(player_routes.router, prefix="/api/v1", tags=["players"])
+
+
 def start():
     """Launched with 'poetry run start' at root level"""
     uvicorn.run("app.backend.main:app", host=HOST, port=PORT, reload=True)
