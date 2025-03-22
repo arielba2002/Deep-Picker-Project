@@ -51,9 +51,6 @@ def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSugg
 
 
 
-
-
-
 # model functions:
 
 import os
@@ -104,7 +101,7 @@ def predict_score(player_ids: List[int]) -> int:
 
     # pre-process
 
-    # # predict
+    # predict
 
     # Dummy implementation - just returns a fixed value
     # In a real implementation, this would use a model to predict the score
