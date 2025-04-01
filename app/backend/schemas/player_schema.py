@@ -1,3 +1,5 @@
+import numpy
+
 # File: ./Deep-Picker-Project/app/backend/schemas/player_schema.py
 from pydantic import BaseModel
 from typing import Optional
@@ -53,4 +55,4 @@ class PredictionRequest(BaseModel):
     player_ids: List[int]
     
 class PredictionResponse(BaseModel):
-    predicted_score: int
+    predicted_score: float
