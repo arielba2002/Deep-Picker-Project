@@ -88,9 +88,6 @@ def preprocess_team_season_data(team_season_data, team_key, stats_to_remove, per
     df, feature_scaler_used = scale_df(df, feature_scaler)
     X, Y, label_scaler_used = prepare_team_input_and_labels(df, labels, label_scaler)
 
-    print("1")
-    print(type(label_scaler_used))
-
     return X, Y, feature_scaler_used, label_scaler_used
 
 def create_players_df(team_data, team_key):
@@ -268,7 +265,6 @@ def predict_team_points(model, team_data, team_key, feature_scaler=None, label_s
     # Make prediction
     prediction = model.predict(X_team_input).flatten()[0]
 
-    print(prediction)
     # Convert prediction back to original scale
     prediction_original = label_scaler_used.inverse_transform([[prediction]])[0][0]
 
@@ -316,8 +312,6 @@ def predict_score(player_ids: List[int]) -> int:
         ]
     }
 
-    print(selected_players)
-
 
     # load the model
     script_dir = os.path.dirname(os.path.abspath(__file__))  # Gets the directory where services.py is
@@ -337,8 +331,6 @@ def predict_score(player_ids: List[int]) -> int:
 
     team_key = "ATL_2024"  # Example: Miami Heat 2023
     team_data = selected_players
-    print(team_data)
-    print(type(team_data))
     predicted_points = predict_team_points(
         model=nba_team_predictor_model,
         team_data=team_data,
@@ -347,6 +339,7 @@ def predict_score(player_ids: List[int]) -> int:
         per_game_stats=per_game_stats,
         per_minute_stats=per_minute_stats
     )
+    
     # Get actual points if available
     actual_points = None
     if "labels" in team_data and team_data["labels"]:
@@ -359,14 +352,6 @@ def predict_score(player_ids: List[int]) -> int:
         print(f"Prediction error: {abs(actual_points - predicted_points):.1f} points")
 
 
-    # pre-process
-
-    # predict
-
-    print(type(float(predicted_points)))
-
-    # Dummy implementation - just returns a fixed value
-    # In a real implementation, this would use a model to predict the score
     return (float(predicted_points) / 82)# Assuming 82 games in a season
 
 
