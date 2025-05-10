@@ -34,6 +34,9 @@ app.include_router(user_routes.router, prefix="/api/v1", tags=["users"])
 from routes import player_routes
 app.include_router(player_routes.router, prefix="/api/v1", tags=["players"])
 
+from routes import auth_routes
+app.include_router(auth_routes.router, prefix="/api/v1/auth", tags=["auth"])
+
 
 def start():
     """Launched with 'poetry run start' at root level"""

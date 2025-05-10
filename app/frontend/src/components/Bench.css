@@ -1,27 +1,92 @@
 /* src/components/Bench.css */
 .bench-container {
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 18px 0 0 0;
+  position: relative;
+}
+
+.bench-players-row {
+  display: flex;
+  flex-direction: row;
+  gap: 32px;
+  margin-bottom: -56px; /* more overlap for bigger circles */
+  z-index: 2;
+  position: relative;
+  justify-content: center;
+  width: 100%;
+}
   
   .bench-player {
-    cursor: pointer;
-    text-align: center;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.bench-player:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 6px #e0e7ef44, 0 10px 25px rgba(0,0,0,0.25);
+}
+.bench-player.selected {
+  border-radius: 50%;
+  padding: 3px;
+  box-shadow: 0 0 0 6px #2563eb55, 0 10px 25px rgba(37,99,235,0.16);
+  background: #f0f8ff;
+}
+.bench-player-image {
+  background-color: #eee;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 10px 28px rgba(30,41,59,0.28), 0 2px 10px rgba(59,130,246,0.10);
+  position: relative;
+  z-index: 2;
+  border: 4px solid #fff;
+  transition: box-shadow 0.18s, border 0.18s;
+}
+
+  .bench-bar {
+  width: 92%;
+  max-width: 440px;
+  height: 28px;
+  background: linear-gradient(90deg, #eab308 10%, #fbbf24 50%, #a16207 90%);
+  border-radius: 18px 18px 28px 28px;
+  box-shadow: 0 8px 24px rgba(80,60,30,0.18), 0 1.5px 8px rgba(80,60,30,0.10);
+  margin: -28px auto 0 auto;
+  position: relative;
+  z-index: 1;
+  display: block;
+  border: 2.5px solid #fbbf24;
+}
+
+  @media (max-width: 900px) {
+  .bench-players-row {
+    gap: 12px;
+    margin-bottom: -34px;
   }
-  
-  .bench-player.selected {
-    border-radius: 50%;
-    padding: 2px;
+  .bench-bar {
+    height: 16px;
+    max-width: 220px;
+    margin-top: -10px;
   }
-  
   .bench-player-image {
-    background-color: #ccc;
-    width: 90px;      /* Adjust size as needed */
-    height: 90px;     /* Adjust size as needed */
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    width: 64px;
+    height: 64px;
+  }
+}
+
+  @media (max-width: 600px) {
+    .bench-bar {
+      height: 14px;
+      max-width: 220px;
+      margin-top: -10px;
+    }
+    .bench-player-image {
+      width: 56px;
+      height: 56px;
+    }
   }
   
   .bench-player.selected .bench-player-image {
