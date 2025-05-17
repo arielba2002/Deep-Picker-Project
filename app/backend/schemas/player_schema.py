@@ -55,4 +55,4 @@ class PredictionRequest(BaseModel):
     player_ids: List[int]
     
 class PredictionResponse(BaseModel):
-    predicted_score: float
+    predicted_score: int

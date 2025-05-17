@@ -351,8 +351,9 @@ def predict_score(player_ids: List[int]) -> int:
         print(f"Actual season points: {actual_points}")
         print(f"Prediction error: {abs(actual_points - predicted_points):.1f} points")
 
-
-    return (float(predicted_points) / 82)# Assuming 82 games in a season
+    # Return the predicted points as int divided by 82 (assuming 82 games in a season)
+    return int(predicted_points / 82)  # Return the predicted points per game
+    
 
 
 
