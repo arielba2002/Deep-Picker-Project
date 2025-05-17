@@ -1,0 +1,8 @@
+.user-dropdown, .professional-dropdown {
+  position: absolute !important;
+  right: 0 !important;
+  left: auto !important;
+  max-width: 90vw !important;
+  overflow-x: auto !important;
+  z-index: 999 !important;
+}
