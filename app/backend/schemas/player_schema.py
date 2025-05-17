@@ -1,3 +1,5 @@
+import numpy
+
 # File: ./Deep-Picker-Project/app/backend/schemas/player_schema.py
 from pydantic import BaseModel
 from typing import Optional
