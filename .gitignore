@@ -15,3 +15,5 @@ __pycache__/
 
 # # Ignore node_modules directory
 node_modules/
+
+.venv/
