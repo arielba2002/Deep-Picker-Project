@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
-
 import ChemistryScore from "./components/ChemistryScore";
 import RecommendedPlayers from "./components/RecommendedPlayers";
 import Lineup from "./components/Lineup";
@@ -15,13 +14,35 @@ import Header from "./components/Header";
 import AdminUsers from "./components/AdminUsers";
 
 function App() {
+  const [backendStatus, setBackendStatus] = useState("");
+  const [error, setError] = useState("");
+
+  // Test backend connection on component mount
+  useEffect(() => {
+    testBackendConnection();
+  }, []);
+
+  const testBackendConnection = async () => {
+    try {
+      const response = await fetch("/api/test");
+      const data = await response.json();
+      if (response.ok) {
+        setBackendStatus(`✅ ${data.message}`);
+      } else {
+        setBackendStatus(`❌ Error: ${data.detail || 'Unknown error'}`);
+      }
+    } catch (err) {
+      setError(`Failed to connect to backend: ${err.message}`);
+      console.error("Backend connection error:", err);
+    }
+  };
 
   const [lineupPlayers, setLineupPlayers] = useState([
-    { id: 1, name: "not chosen", bottom: "20%", left: "50%", image: unchosen },
-    { id: 2, name: "not chosen", bottom: "33%", left: "80%", image: unchosen },
-    { id: 3, name: "not chosen", bottom: "67%", left: "25%", image: unchosen },
-    { id: 4, name: "not chosen", bottom: "67%", left: "60%", image: unchosen },
-    { id: 5, name: "not chosen",  bottom: "55%", left: "38%", image: unchosen },
+    { id: 1, name: "not chosen", position: "pointGuard", image: unchosen },
+    { id: 2, name: "not chosen", position: "shootingGuard", image: unchosen },
+    { id: 3, name: "not chosen", position: "smallForward", image: unchosen },
+    { id: 4, name: "not chosen", position: "powerForward", image: unchosen },
+    { id: 5, name: "not chosen", position: "center", image: unchosen },
   ]);
 
   const [benchPlayers, setBenchPlayers] = useState([
@@ -61,8 +82,20 @@ function App() {
       <Route path="/admin/users" element={<AdminUsers />} />
       <Route path="/*" element={
         <RequireAuth>
-          <>
+          <div className="App">
             <Header />
+            {/* Connection status indicator */}
+            <div style={{
+              padding: '10px',
+              margin: '10px',
+              borderRadius: '4px',
+              backgroundColor: backendStatus ? '#e8f5e9' : '#ffebee',
+              color: backendStatus ? '#2e7d32' : '#c62828',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              {error ? error : (backendStatus || 'Connecting to backend...')}
+            </div>
             <div className="app-container">
               <aside className="left-panel">
                 <ChemistryScore
@@ -94,7 +127,7 @@ function App() {
                 />
               </aside>
             </div>
-          </>
+          </div>
         </RequireAuth>
       } />
     </Routes>

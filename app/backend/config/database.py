@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from functools import lru_cache
 
 # Use environment variables for configuration (consider python-dotenv)
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/mydb"
+DATABASE_URL = "postgresql://postgres:postgres@db:5432/mydb"
 
 # Asynchronous database connection
 database = Database(DATABASE_URL)

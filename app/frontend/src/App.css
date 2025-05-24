@@ -347,8 +347,8 @@ html, body {
   width: 100vw;
   min-height: 100vh;
   margin: 0;
-  padding-top: 8px; /* Further reduced space between header and panels */
-  padding-bottom: 2rem; /* Space below panels */
+  padding-top: 16px;
+  padding-bottom: 2rem;
   box-sizing: border-box;
   gap: 3.5rem;
   background: none;
@@ -545,4 +545,61 @@ html, body {
 .professional-dropdown .logout-btn {
   width: 100%;
   margin: 0.5rem 0 0;
+}
+
+.player-img-wrapper {
+  position: relative;
+  width: 64px;   /* or whatever your image size is */
+  height: 64px;
+}
+
+
+.position-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  pointer-events: none; /* so clicks pass through to the player div */
+}
+
+
+.lineup-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* src/components/Lineup.css */
+
+.player-image {
+  width: 40px;             /* was 56px */
+  height: 40px;            /* was 56px */
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid transparent; /* unselected */
+  transition: border-color 0.2s, transform 0.2s;
+}
+
+.player.selected .player-image {
+  border-color: #ffd700;   /* selected highlight */
+}
+
+.player-label {
+  margin-top: 0.3rem;      /* a bit tighter */
+  font-size: 0.7rem;       /* smaller text */
+}
+
+.player-image {
+  width: 56px;             /* shrink from 64px */
+  height: 56px;            /* keep it square */
+  border-radius: 50%;      /* circular crop */
+  object-fit: cover;
+  border: 2px solid transparent; /* unselected thickness */
+  transition: border-color 0.2s, transform 0.2s;
 }
