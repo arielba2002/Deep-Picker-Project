@@ -5,10 +5,14 @@ export default defineConfig(({ mode }) => ({
   plugins: [react()],
   server: {
     port: 3000,
-    host: true, // Listen on all network interfaces
+    host: true,         // listen on all interfaces
     strictPort: true,
+    allowedHosts: [
+      'frontend-deep.apps.gapu-2.customers.k8s.co.il'
+      // or simply 'all'
+    ],
     proxy: {
-      // Proxy API requests to the backend
+      // any request to /api/* will be forwarded to the backend service
       '/api': {
         target: 'http://backend:8888',
         changeOrigin: true,
@@ -17,15 +21,16 @@ export default defineConfig(({ mode }) => ({
       },
     },
     watch: {
-      usePolling: true, // For file watching in Docker
+      usePolling: true,  // Docker-friendly file watching
     },
   },
-  // Environment variables
   define: {
+    // —in dev mode, use relative /api so you hit the proxy—
+    // —in prod, fall back to the real backend route URL—
     'import.meta.env.VITE_API_URL': JSON.stringify(
-      mode === 'development' 
-        ? 'http://localhost:8888' 
-        : 'http://localhost:8888' // Change this in production
+      mode === 'development'
+        ? '/api'
+        : 'https://backend-deep.apps.gapu-2.customers.k8s.co.il'
     ),
   },
 }));

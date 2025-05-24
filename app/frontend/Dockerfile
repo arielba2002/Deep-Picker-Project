@@ -1,20 +1,18 @@
-# Use Node.js 18 with Alpine Linux for a smaller image size
 FROM node:18-alpine
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files
+# 1) install dependencies
 COPY package*.json ./
+RUN npm ci
 
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application
+# 2) copy your app
 COPY . .
 
-# Expose the port the app runs on
+# 3) ensure any user can write into /app (and subdirs like node_modules/.vite-temp)
+RUN chmod -R a+rwX /app
+
 EXPOSE 3000
 
-# Start the development server
+# 4) start Vite in host-bind mode
 CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
