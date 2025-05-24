@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import "./App.css";
+import { Routes, Route } from "react-router-dom";
+import SignIn from "./components/SignIn";
+import SignUp from "./components/SignUp";
 
 import ChemistryScore from "./components/ChemistryScore";
 import RecommendedPlayers from "./components/RecommendedPlayers";
@@ -7,7 +10,9 @@ import Lineup from "./components/Lineup";
 import Bench from "./components/Bench";
 import SearchPlayers from "./components/SearchPlayers";
 import unchosen from './assets/unchosen.png'
-
+import RequireAuth from "./components/RequireAuth";
+import Header from "./components/Header";
+import AdminUsers from "./components/AdminUsers";
 
 function App() {
 
@@ -50,37 +55,49 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-       <aside className="left-panel">
-        <ChemistryScore
-        lineupPlayers={lineupPlayers} 
-        benchPlayers={benchPlayers}
-        />
-        <RecommendedPlayers 
-        players={dummyPlayers}
-        />
-      </aside>
-      <main className="court-panel">
-      <Lineup
-          players={lineupPlayers}
-          setSelectedPlayer={setSelectedPlayer}
-          selectedPlayer={selectedPlayer}
-          section="lineup"
-        />
-        <Bench
-          players={benchPlayers}
-          setSelectedPlayer={setSelectedPlayer}
-          selectedPlayer={selectedPlayer}
-          section="bench"
-        />
-      </main>
-      <aside className="right-panel">
-        <SearchPlayers
-          selectedPlayer={selectedPlayer}
-          updatePlayerName={updatePlayerName}
-        />
-      </aside>
-    </div>
+    <Routes>
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<SignUp />} />
+      <Route path="/admin/users" element={<AdminUsers />} />
+      <Route path="/*" element={
+        <RequireAuth>
+          <>
+            <Header />
+            <div className="app-container">
+              <aside className="left-panel">
+                <ChemistryScore
+                  lineupPlayers={lineupPlayers}
+                  benchPlayers={benchPlayers}
+                />
+                <RecommendedPlayers
+                  players={dummyPlayers}
+                />
+              </aside>
+              <main className="court-panel">
+                <Lineup
+                  players={lineupPlayers}
+                  setSelectedPlayer={setSelectedPlayer}
+                  selectedPlayer={selectedPlayer}
+                  section="lineup"
+                />
+                <Bench
+                  players={benchPlayers}
+                  setSelectedPlayer={setSelectedPlayer}
+                  selectedPlayer={selectedPlayer}
+                  section="bench"
+                />
+              </main>
+              <aside className="right-panel">
+                <SearchPlayers
+                  selectedPlayer={selectedPlayer}
+                  updatePlayerName={updatePlayerName}
+                />
+              </aside>
+            </div>
+          </>
+        </RequireAuth>
+      } />
+    </Routes>
   );
 }
 

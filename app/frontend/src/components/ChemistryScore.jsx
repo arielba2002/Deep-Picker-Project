@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "react-circular-progressbar/dist/styles.css";
+import CircleProgressBar from "./CircleProgressBar";
 import "./ChemistryScore.css";
 
 function ChemistryScore({ lineupPlayers, benchPlayers }) {
@@ -28,17 +28,17 @@ function ChemistryScore({ lineupPlayers, benchPlayers }) {
 
   return (
     <div className="chemistry-score-container">
-      <h2>Chemistry Score</h2>
+      <h2 style={{marginBottom: 8}}>Chemistry Score</h2>
       <div className="score-display">
         {loading ? (
           <div className="spinner"></div>
-        ) : score !== null ? (
-          <div className="score-value">{score}</div>
         ) : (
-          <div className="score-value">{0}</div>
+          <CircleProgressBar value={score !== null ? score : 0} max={150} />
         )}
       </div>
-      <br/>
+      <div className="chemistry-score-subtitle">
+        Team chemistry is measured from 0 (poor) to 150 (excellent).
+      </div>
       <button 
         className="calculate-button" 
         onClick={handleCalculateScore}
