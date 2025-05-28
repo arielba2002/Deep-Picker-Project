@@ -8,14 +8,6 @@ function SearchPlayers({ selectedPlayer, updatePlayerName }) {
   useEffect(() => {
     // If input is empty, fetch all players
     if (!inputValue.trim()) {
-      fetch('http://localhost:8888/api/v1/players/all')
-        .then((res) => res.json())
-        .then((data) => {
-          setSuggestions(data);
-        })
-        .catch((error) => {
-          console.error("Error fetching all players:", error);
-        });
       return;
     }
 
@@ -71,7 +63,7 @@ function SearchPlayers({ selectedPlayer, updatePlayerName }) {
                   alt={suggestion.name}
                   className="suggestion-image"
                 />
-                <span className="suggestion-name">{suggestion.playerName + " - " + suggestion.team}</span>
+                <span className="suggestion-name">{suggestion.playerName}</span>
               </li>
             ))}
           </ul>

@@ -1,52 +1,197 @@
 # File: ./Deep-Picker-Project/app/backend/services/player_services.py
-from config.constants import PLAYERS_DATA
-from schemas import player_schema
+import requests
+import datetime
+import json
 from typing import List
+from schemas import player_schema
+from pathlib import Path
+import os
 
-def get_all_players():
-    """
-    Get all players from the constant data.
-    
-    Returns:
-        List of all players
-    """
-    return PLAYERS_DATA["players"]
+# Module-level cache
+_players_cache: List[dict] = []
+_last_fetch_year: int = None
+_headshots_cache: dict = {}
 
-# In services/player_services.py
-def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSuggestion]:
-    """
-    Search players by name prefix.
+def _normalize_name(name: str) -> str:
+    """Normalize a player name by removing special characters and converting to ASCII."""
+    # First, handle Jr./Sr. suffixes with and without commas
+    name = name.replace(" Jr.", ", Jr.").replace(" Sr.", ", Sr.")
+    name = name.replace("CJ", "C.J.")
+
+    # Replace common special characters with their ASCII equivalents
+    replacements = {
+        'ć': 'c', 'č': 'c', 'š': 's', 'ž': 'z',
+        'Ć': 'C', 'Č': 'C', 'Š': 'S', 'Ž': 'Z',
+        'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+        'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+        'ñ': 'n', 'Ñ': 'N',
+        'ü': 'u', 'Ü': 'U',
+        'ö': 'o', 'Ö': 'O',
+        'ä': 'a', 'Ä': 'A',
+        'ë': 'e', 'Ë': 'E',
+        'ï': 'i', 'Ï': 'I',
+        'ÿ': 'y', 'Ÿ': 'Y',
+        'œ': 'oe', 'Œ': 'OE',
+        'æ': 'ae', 'Æ': 'AE',
+        'ß': 'ss'
+    }
     
-    Args:
-        prefix: The prefix to search for
-        limit: Maximum number of suggestions to return
+    normalized = name
+    for special, ascii_char in replacements.items():
+        normalized = normalized.replace(special, ascii_char)
+    
+    return normalized
+
+def _load_headshots() -> dict:
+    """
+    Loads the player headshots mapping from the JSON file.
+    """
+    global _headshots_cache
+    if not _headshots_cache:
+        headshots_path = Path(__file__).parent.parent / "config" / "player_headshots.json"
+        try:
+            with open(headshots_path, 'r') as f:
+                _headshots_cache = json.load(f)
+            print(f"[player_services] Loaded {len(_headshots_cache)} player headshots")
+        except Exception as e:
+            print(f"[player_services] Failed to load headshots ({e})")
+            _headshots_cache = {}
+    return _headshots_cache
+
+def _fetch_players() -> List[dict]:
+    """
+    Fetches the full current-season roster from the NBA API once per process (or on year rollover).
+    """
+    global _players_cache, _last_fetch_year
+
+    # Use the calendar year as the "season"
+    season = datetime.datetime.now().year
+
+    # Re-fetch if first time or season changed
+    if _last_fetch_year != season or not _players_cache:
+        url = (
+            f"http://rest.nbaapi.com/api/PlayerDataTotals/"
+            f"query?season={season}&sortBy=PlayerName&pageSize=1000"
+        )
+        try:
+            resp = requests.get(url, timeout=20)
+            resp.raise_for_status()
+            raw_players = resp.json()
+            print(f"[player_services] Fetched {len(raw_players)} players from NBA API")
+        except Exception as e:
+            print(f"[player_services] API fetch failed ({e})")
+            raise e
+
+        # Load headshots mapping
+        headshots = _load_headshots()
+
+        # Normalize to your schema shape
+        _players_cache = [
+        {
+            "id":            p["id"],
+            "playerName":    p["playerName"],
+            "team":          p.get("team", ""),
+            "position":      p.get("position", ""),
+            "age":           p.get("age"),
+
+            # box-score stats
+            "games":         p.get("games"),
+            "gamesStarted":  p.get("gamesStarted"),
+            "minutesPg":     p.get("minutesPg"),
+
+            "fieldGoals":    p.get("fieldGoals"),
+            "fieldAttempts": p.get("fieldAttempts"),
+            "fieldPercent":  p.get("fieldPercent", 0.0),
+
+            "threeFg":       p.get("threeFg"),
+            "threeAttempts": p.get("threeAttempts"),
+            "threePercent":  p.get("threePercent", 0.0),
+
+            "twoFg":         p.get("twoFg"),
+            "twoAttempts":   p.get("twoAttempts"),
+            "twoPercent":    p.get("twoPercent", 0.0),
+
+            "effectFgPercent": p.get("effectFgPercent", 0.0),
+
+            "ft":            p.get("ft"),
+            "ftAttempts":    p.get("ftAttempts"),
+            "ftPercent":     p.get("ftPercent", 0.0),
+
+            "offensiveRb":   p.get("offensiveRb"),
+            "defensiveRb":   p.get("defensiveRb"),
+            "totalRb":       p.get("totalRb"),
+
+            "assists":       p.get("assists"),
+            "steals":        p.get("steals"),
+            "blocks":        p.get("blocks"),
+            "turnovers":     p.get("turnovers"),
+            "personalFouls": p.get("personalFouls"),
+            "points":        p.get("points"),
+
+            # season info 
+            "season":        p.get("season"),
+            "playerId":      p.get("playerId", ""),
+
+            # headshot URL - use normalized name for lookup
+            "image":         headshots.get(_normalize_name(p["playerName"]), ""),
+        }
+            for p in raw_players
+        ]
+
+        # Remove duplicates based on player ID
+        seen_ids = set()
+        unique_players = []
+        for player in _players_cache:
+            if player["id"] not in seen_ids:
+                seen_ids.add(player["id"])
+                unique_players.append(player)
         
-    Returns:
-        List of player suggestions matching the prefix
+        _players_cache = unique_players
+        print(f"[player_services] Cached {len(_players_cache)} unique players in memory")
+        _last_fetch_year = season
+
+    return _players_cache
+
+
+# Public service functions
+def get_all_players() -> List[dict]:
+    """
+    Returns the full cached roster for the current season.
+    """
+    return _fetch_players()
+
+
+def search_players(prefix: str, limit: int = 100) -> List[player_schema.PlayerSuggestion]:
+    """
+    Search players by name prefix against the in-memory cache.
+    Returns unique players (no duplicates) based on player ID and player name.
     """
     if not prefix:
         return []
-        
-    prefix = prefix.lower()
-    matches = []
-    
-    for player in PLAYERS_DATA["players"]:
-        if player["playerName"].lower().startswith(prefix):
-            matches.append(
-                player_schema.PlayerSuggestion(
-                    id=player["id"],
-                    playerName=player["playerName"],
-                    team=player["team"],
-                    image=player["image"]  # Add this line
+
+    prefix_lower = prefix.lower()
+    matches: List[player_schema.PlayerSuggestion] = []
+    seen_ids = set()  # Track seen player IDs to avoid duplicates
+    seen_names = set()  # Track seen player names to avoid duplicates
+
+    for p in _fetch_players():
+        if p["playerName"].lower().startswith(prefix_lower):
+            # Only add if we haven't seen this player ID or name before
+            if p["id"] not in seen_ids and p["playerName"] not in seen_names:
+                seen_ids.add(p["id"])
+                seen_names.add(p["playerName"])
+                matches.append(
+                    player_schema.PlayerSuggestion(
+                        id=p["id"],
+                        playerName=p["playerName"],
+                        image=p["image"],
+                    )
                 )
-            )
-            
-            if len(matches) >= limit:
-                break
-                
+                if len(matches) >= limit:
+                    break
+
+    print(f"[player_services] Search returned {len(matches)} unique players for prefix '{prefix}'")
     return matches
-
-
 
 
 
@@ -294,24 +439,19 @@ def predict_score(player_ids: List[int]) -> int:
         raise ValueError("All player IDs must be different from each other")
 
     # Create a set of existing player IDs
-    existing_player_ids = set(player["id"] for player in PLAYERS_DATA["players"])
-    
+    players = get_all_players()
+    existing_player_ids = set(p["id"] for p in players)
+
     # Check if all player IDs exist
     for pid in player_ids:
         if pid not in existing_player_ids:
             raise ValueError(f"Player ID {pid} does not exist in the data")
-
-    # Create a new JSON variable with only the selected players
+   
+   # Create a new JSON variable with only the selected players
     selected_players = {
-        "labels": [
-            9700
-        ],
-        "players": [
-            player for player in PLAYERS_DATA["players"] 
-            if player["id"] in player_ids
-        ]
+        "labels": [ 9700 ],
+        "players": [p for p in players if p["id"] in player_ids]
     }
-
 
     # load the model
     script_dir = os.path.dirname(os.path.abspath(__file__))  # Gets the directory where services.py is
@@ -324,7 +464,7 @@ def predict_score(player_ids: List[int]) -> int:
     unwanted_stats = ["id", "playerName", "team", "season", "playerId", "gamesStarted", "image"]
     per_game_stats = [
         "points", "assists", "steals", "blocks", "turnovers", "personalFouls",
-        "offensiveRb", "defensiveRb", "totalRb", "fieldGoals", "fieldAttempts",
+        "offensiveRb", "defensiveRbs", "totalRb", "fieldGoals", "fieldAttempts",
         "threeFg", "threeAttempts", "twoFg", "twoAttempts", "ft", "ftAttempts"
     ]
     per_minute_stats = per_game_stats
