@@ -5,7 +5,7 @@ import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 
 import ChemistryScore from "./components/ChemistryScore";
-import RecommendedPlayers from "./components/RecommendedPlayers";
+import StatsPanel from "./components/StatsPanel";
 import Lineup from "./components/Lineup";
 import Bench from "./components/Bench";
 import SearchPlayers from "./components/SearchPlayers";
@@ -38,6 +38,26 @@ function App() {
 
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
+  const stats = [
+    { "label": "Offensive Rating", "value": 112.3 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 },
+    { "label": "Defensive Rating", "value": 105.6 }
+  ]
+
   const updatePlayerName = (section, id, newName, newImage, newID) => {
     if (section === "lineup") {
       setLineupPlayers(prev =>
@@ -69,9 +89,7 @@ function App() {
                   lineupPlayers={lineupPlayers}
                   benchPlayers={benchPlayers}
                 />
-                <RecommendedPlayers
-                  players={dummyPlayers}
-                />
+	        <StatsPanel stats={stats} />
               </aside>
               <main className="court-panel">
                 <Lineup

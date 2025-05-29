@@ -1,0 +1,70 @@
+/* src/components/StatsPanel.css */
+
+:root {
+  --panel-bg: #f5f7fa;
+  --row-bg-even: #ffffff;
+  --row-bg-odd: #f0f4f8;
+  --accent: #ff6f61;
+  --text-main: #102a43;
+  --text-sub: #334e68;
+}
+
+.stats-panel-container {
+  background: var(--panel-bg);
+  border-radius: 8px;
+  padding: 16px;
+  max-width: 340px;
+  max-height: 400px;
+  overflow-y: auto;
+  margin: 0 auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.stats-panel-container h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 12px;
+  border-bottom: 2px solid var(--accent);
+  padding-bottom: 4px;
+}
+
+.stats-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--row-bg-even);
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  border-left: 4px solid var(--accent);
+  transition: background 0.2s;
+}
+
+.stat-item:nth-child(odd) {
+  background: var(--row-bg-odd);
+}
+
+.stat-item:hover {
+  background: #e1e8f0;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-sub);
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
