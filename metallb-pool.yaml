@@ -1,0 +1,17 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: external-ips
+  namespace: metallb-system
+spec:
+  addresses:
+    - 172.29.170.45-172.29.170.48
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: adv
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+    - external-ips

@@ -7,10 +7,7 @@ export default defineConfig(({ mode }) => ({
     port: 3000,
     host: true,         // listen on all interfaces
     strictPort: true,
-    allowedHosts: [
-      'frontend-deep.apps.gapu-2.customers.k8s.co.il'
-      // or simply 'all'
-    ],
+    allowedHosts: [ 'all' ],
     proxy: {
       // any request to /api/* will be forwarded to the backend service
       '/api': {

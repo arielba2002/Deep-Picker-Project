@@ -1,0 +1,243 @@
+# all-in-one.yaml
+
+# 1) Secret for DB credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+stringData:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+
+---
+# 2) PVC for Postgres data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# 3) Postgres Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      initContainers:
+      - name: init-pvc
+        image: busybox
+        command:
+          - sh
+          - -c
+          - mkdir -p /mnt/pgdata
+        volumeMounts:
+        - name: pgdata
+          mountPath: /mnt
+      containers:
+      - name: postgres
+        image: postgres:15
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          value: mydb
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata
+      volumes:
+      - name: pgdata
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+# 4) Service for Postgres
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: db
+
+---
+# 5) (Optional) Route for Postgres
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: db
+spec:
+  to:
+    kind: Service
+    name: db
+  port:
+    targetPort: 5432
+
+---
+# 6) Backend Deployment (waits for DB)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          - sh
+          - -c
+          - |
+            echo "⏳ waiting for Postgres…"
+            until nc -z db 5432; do sleep 2; done
+      containers:
+      - name: backend
+        image: docker.io/eliadb/deep-picker-backend:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DATABASE_URL
+          value: postgresql://postgres:postgres@db:5432/mydb
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8888"
+        - name: FRONTEND_URL
+          value: "http://frontend:3000"
+        ports:
+        - containerPort: 8888
+
+---
+# 7) Service for Backend
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+  - port: 8888
+    targetPort: 8888
+  selector:
+    app: backend
+
+---
+# 8) Route for Backend
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: backend
+spec:
+  to:
+    kind: Service
+    name: backend
+  port:
+    targetPort: 8888
+
+---
+# 9) Frontend Deployment (waits for Backend via curl)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: docker.io/eliadb/deep-picker-frontend:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: VITE_API_URL
+          value: "http://backend:8888"
+        - name: NODE_ENV
+          value: development
+        - name: CHOKIDAR_USEPOLLING
+          value: "true"
+        ports:
+        - containerPort: 3000
+
+---
+# 10) Service for Frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  annotations:
+    metallb.universe.tf/address-pool: external-ips
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+    - name: https
+      port: 443
+      targetPort: 3000
+
+
+
+---
+# 11) Route for Frontend
+---
+# Frontend Route for deep-picker.co.il with TLS
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend
+  annotations:
+    cert-manager.io/issuer-name: letsencrypt-prod
+    cert-manager.io/issuer-kind: ClusterIssuer
+spec:
+  host: deep-picker.com
+  to:
+    kind: Service
+    name: frontend
+  port:
+    targetPort: http
