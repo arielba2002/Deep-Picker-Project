@@ -12,7 +12,7 @@ function SearchPlayers({ selectedPlayer, updatePlayerName }) {
     }
 
     const delayDebounceFn = setTimeout(() => {
-      fetch(`http://localhost:8888/api/v1/players/autocomplete/?prefix=${inputValue.trim()}`)
+      fetch(`http://backend.deep.svc.cluster.local:8888/api/v1/players/autocomplete/?prefix=${inputValue.trim()}`)
         .then((res) => res.json())
         .then((data) => {
           setSuggestions(data);

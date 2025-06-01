@@ -3,11 +3,12 @@ import uvicorn
 from fastapi import FastAPI
 from config.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 # Get environment variables
 PORT = int(os.getenv("PORT", "8888"))
 HOST = os.getenv("HOST", "0.0.0.0")
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://frontend.deep.svc.cluster.local:3000")
 
 # Initialize the FastAPI app
 app = FastAPI(
@@ -25,6 +26,11 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["*"],
 )
+
+# Health check endpoint
+@app.get("/health", tags=["health"])
+async def health_check():
+    return JSONResponse(content={"status": "healthy", "version": app.version})
 
 # Initialize database
 init_db()

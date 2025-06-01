@@ -1,18 +1,36 @@
-FROM node:18-alpine
+FROM node:18-alpine as builder
 
 WORKDIR /app
 
-# 1) install dependencies
+# Install dependencies and build
 COPY package*.json ./
 RUN npm ci
-
-# 2) copy your app
 COPY . .
 
-# 3) ensure any user can write into /app (and subdirs like node_modules/.vite-temp)
-RUN chmod -R a+rwX /app
+# Build in production mode with correct API URL
+ENV VITE_API_URL=http://backend.deep.svc.cluster.local:8888
+RUN npm run build
+
+# Production image
+FROM nginx:alpine
+
+# Create nginx directories with proper permissions
+RUN mkdir -p /var/cache/nginx /var/run/nginx /var/tmp/nginx && \
+    chown -R nginx:nginx /var/cache/nginx /var/run/nginx /var/tmp/nginx && \
+    chmod -R 777 /var/cache/nginx /var/run/nginx /var/tmp/nginx && \
+    mkdir -p /var/run/nginx && \
+    chown -R nginx:nginx /var/run/nginx
+
+# Copy built files
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration files
+COPY nginx/nginx.conf /etc/nginx/nginx.conf
+COPY nginx/conf.d/default.conf /etc/nginx/conf.d/default.conf
+
+# Set proper permissions
+RUN chown -R nginx:nginx /usr/share/nginx/html
 
 EXPOSE 3000
-
-# 4) start Vite in host-bind mode
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+USER nginx
+CMD ["nginx", "-g", "daemon off;"]

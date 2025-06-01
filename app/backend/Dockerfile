@@ -8,14 +8,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DEFAULT_TIMEOUT=100 \
     HOST=0.0.0.0 \
     PORT=8888 \
-    FRONTEND_URL=http://localhost:3000 \
-    DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:5432/mydb
+    PYTHONPATH=/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# Create matplotlib cache directory and set permissions
+RUN mkdir -p /app/.config/matplotlib && \
+    chmod -R 777 /app/.config
 
 # Set working directory
 WORKDIR /app
@@ -25,6 +28,7 @@ COPY pyproject.toml ./
 
 # Install dependencies directly using pip
 RUN pip install --no-cache-dir \
+    --no-warn-script-location \
     fastapi==0.115.6 \
     uvicorn==0.34.0 \
     sqlalchemy==2.0.37 \

@@ -10,7 +10,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:8888  # For browser access
+      - VITE_API_URL=http://backend.deep.svc.cluster.local:8888  # For browser access
       - CHOKIDAR_USEPOLLING=true  # For file watching in Docker
     depends_on:
       - backend
@@ -26,7 +26,7 @@ services:
     environment:
       - PORT=8888
       - HOST=0.0.0.0
-      - FRONTEND_URL=http://localhost:3000
+      - FRONTEND_URL=http://frontend.deep.svc.cluster.local:3000
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/mydb
     volumes:
       - ./app/backend:/app

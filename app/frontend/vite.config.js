@@ -9,25 +9,33 @@ export default defineConfig(({ mode }) => ({
     strictPort: true,
     allowedHosts: [ 'all' ],
     proxy: {
-      // any request to /api/* will be forwarded to the backend service
       '/api': {
         target: 'http://backend:8888',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
         secure: false,
+        ws: true,
+        logLevel: 'debug',
+        onProxyReq: (proxyReq, req, res) => {
+          // Remove any HTTPS headers
+          delete proxyReq.headers['x-forwarded-proto'];
+          delete proxyReq.headers['x-forwarded-ssl'];
+        }
       },
+      '/v1': {
+        target: 'http://backend:8888/v1',
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        logLevel: 'debug'
+      }
     },
     watch: {
       usePolling: true,  // Docker-friendly file watching
     },
   },
   define: {
-    // —in dev mode, use relative /api so you hit the proxy—
-    // —in prod, fall back to the real backend route URL—
-    'import.meta.env.VITE_API_URL': JSON.stringify(
-      mode === 'development'
-        ? '/api'
-        : 'https://backend-deep.apps.gapu-2.customers.k8s.co.il'
-    ),
+    // Always use relative paths for proxying
+    'import.meta.env.VITE_API_URL': JSON.stringify('/api'),
   },
 }));
