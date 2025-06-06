@@ -41,7 +41,7 @@ export default function Header() {
   return (
     <header className="header">
       <a className="header-left" href="/" aria-label="Home">
-        <Logo size={56} />
+        <Logo size={80} />
         <span className="brand">Deep Picker</span>
       </a>
       <div className="user-section" ref={dropdownRef}>
