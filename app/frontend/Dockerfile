@@ -8,7 +8,7 @@ RUN npm ci
 COPY . .
 
 # Build in production mode with correct API URL
-ENV VITE_API_URL=http://backend.deep.svc.cluster.local:8888
+ENV VITE_API_URL=/api
 RUN npm run build
 
 # Production image

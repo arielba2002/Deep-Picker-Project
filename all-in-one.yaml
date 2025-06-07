@@ -107,18 +107,22 @@ spec:
       labels:
         app: backend
     spec:
-      initContainers:
-      - name: wait-for-db
-        image: busybox
-        command:
-          - sh
-          - -c
-          - |
-            echo "⏳ waiting for Postgres…"
-            until nc -z db 5432; do sleep 2; done
+      # initContainers:
+      # - name: wait-for-db
+      #   image: busybox
+      #   command:
+      #     - sh
+      #     - -c
+      #     - |
+      #       echo "⏳ waiting for Postgres…"
+      #       until nc -z db 5432; do 
+      #         echo "Waiting for database connection..."
+      #         sleep 2
+      #       done
+      #       echo "Database connection successful!"
       containers:
       - name: backend
-        image: docker.io/eliadb/deep-picker-backend:v1.0.2
+        image: docker.io/eliadb/deep-picker-backend:v1.0.27
         imagePullPolicy: Always
         env:
         - name: DATABASE_URL
@@ -129,6 +133,10 @@ spec:
           value: "8888"
         - name: FRONTEND_URL
           value: "http://frontend:3000"
+        - name: MPLCONFIGDIR
+          value: "/tmp/matplotlib"
+        - name: PYTHONUNBUFFERED
+          value: "1"
         resources:
           requests:
             memory: "128Mi"
@@ -136,6 +144,12 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          failureThreshold: 30
+          periodSeconds: 10
         livenessProbe:
           httpGet:
             path: /health
@@ -146,12 +160,20 @@ spec:
           httpGet:
             path: /health
             port: 8888
-          initialDelaySeconds: 5
+          initialDelaySeconds: 15
           periodSeconds: 10
-        - name: MPLCONFIGDIR
-          value: "/tmp/matplotlib"
         ports:
         - containerPort: 8888
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: matplotlib-volume
+          mountPath: /tmp/matplotlib
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+      - name: matplotlib-volume
+        emptyDir: {}
 
 ---
 # 6) Service for Backend (ClusterIP, internal only)
@@ -184,7 +206,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: docker.io/eliadb/deep-picker-frontend:v1.0.24
+        image: docker.io/eliadb/deep-picker-frontend:v1.0.33
         imagePullPolicy: IfNotPresent
         env:
         - name: VITE_API_URL
@@ -216,21 +238,19 @@ spec:
       port: 443
       targetPort: 3000
 
-
-
----
-# 9) Route for Frontend
-apiVersion: route.openshift.io/v1
-kind: Route
-metadata:
-  name: frontend
-  annotations:
-    cert-manager.io/issuer-name: letsencrypt-prod
-    cert-manager.io/issuer-kind: ClusterIssuer
-spec:
-  host: deep-picker.com
-  to:
-    kind: Service
-    name: frontend
-  port:
-    targetPort: http
+# ---
+# # 9) Route for Frontend
+# apiVersion: route.openshift.io/v1
+# kind: Route
+# metadata:
+#   name: frontend
+#   annotations:
+#     cert-manager.io/issuer-name: letsencrypt-prod
+#     cert-manager.io/issuer-kind: ClusterIssuer
+# spec:
+#   host: deep-picker.com
+#   to:
+#     kind: Service
+#     name: frontend
+#   port:
+#     targetPort: http

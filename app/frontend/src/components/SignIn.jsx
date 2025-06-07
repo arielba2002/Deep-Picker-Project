@@ -13,10 +13,9 @@ export default function SignIn() {
     e.preventDefault();
     setError("");
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/v1/auth/signin`, {
+      const response = await fetch("/api/v1/auth/signin", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        credentials: 'include',
         body: new URLSearchParams({ username: email, password }),
       });
       const data = await response.json();

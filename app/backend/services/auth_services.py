@@ -1,3 +1,4 @@
+import os
 from sqlalchemy.orm import Session
 from schemas import user_schema
 from models import user_model
@@ -7,7 +8,7 @@ from jose import jwt
 from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 
-SECRET_KEY = "supersecretkey"  # In production, use env vars
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "supersecretkey")  # Use environment variable in production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
