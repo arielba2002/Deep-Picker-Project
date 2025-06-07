@@ -5,7 +5,6 @@ import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 
 import ChemistryScore from "./components/ChemistryScore";
-import RecommendedPlayers from "./components/RecommendedPlayers";
 import Lineup from "./components/Lineup";
 import Bench from "./components/Bench";
 import SearchPlayers from "./components/SearchPlayers";
@@ -29,12 +28,6 @@ function App() {
     { id: 7, name: "not chosen", image: unchosen },
     { id: 8, name: "not chosen", image: unchosen },
   ]);
-
-  const dummyPlayers = [
-    {name: "Lebron James", image: "https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png", team: "LAL"},
-    {name: "Stephen Curry", image: "https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png", team: "GSW"},
-    {name: "Giannis Antetokounmpo", image: "https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png", team: "MIL"}
-  ]
 
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
@@ -69,9 +62,6 @@ function App() {
                   lineupPlayers={lineupPlayers}
                   benchPlayers={benchPlayers}
                 />
-                <RecommendedPlayers
-                  players={dummyPlayers}
-                />
               </aside>
               <main className="court-panel">
                 <Lineup
@@ -91,6 +81,8 @@ function App() {
                 <SearchPlayers
                   selectedPlayer={selectedPlayer}
                   updatePlayerName={updatePlayerName}
+                  lineupPlayers={lineupPlayers}
+                  benchPlayers={benchPlayers}
                 />
               </aside>
             </div>

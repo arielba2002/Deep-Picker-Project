@@ -7,7 +7,7 @@ export default function Logo({ size = 38, style = {} }) {
       src={logo}
       alt="Logo"
       style={{
-        height: size,
+        height: size, 
         width: "auto",
         display: "block",
         borderRadius: 8,
