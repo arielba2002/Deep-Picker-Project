@@ -7,10 +7,10 @@ function StatsPanel({ stats }) {
     <div className="stats-panel-container">
       <h2>Lineup & Bench Stats</h2>
       <ul className="stats-list">
-        {stats.map((stat, idx) => (
+        {Object.entries(stats).map(([key, value], idx) => (
           <li key={idx} className="stat-item">
-            <span className="stat-label">{stat.label}</span>
-            <span className="stat-value">{stat.value}</span>
+            <span className="stat-label">{key}</span>
+            <span className="stat-value">{value}</span>
           </li>
         ))}
       </ul>

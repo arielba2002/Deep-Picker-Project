@@ -30,33 +30,10 @@ function App() {
     { id: 8, name: "not chosen", image: unchosen },
   ]);
 
-  const dummyPlayers = [
-    {name: "Lebron James", image: "https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png", team: "LAL"},
-    {name: "Stephen Curry", image: "https://cdn.nba.com/headshots/nba/latest/1040x760/201939.png", team: "GSW"},
-    {name: "Giannis Antetokounmpo", image: "https://cdn.nba.com/headshots/nba/latest/1040x760/203507.png", team: "MIL"}
-  ]
-
   const [selectedPlayer, setSelectedPlayer] = useState(null);
 
-  const stats = [
-    { "label": "Offensive Rating", "value": 112.3 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 },
-    { "label": "Defensive Rating", "value": 105.6 }
-  ]
+  const [stats, setStats] = useState({
+  })
 
   const updatePlayerName = (section, id, newName, newImage, newID) => {
     if (section === "lineup") {
@@ -88,6 +65,7 @@ function App() {
                 <ChemistryScore
                   lineupPlayers={lineupPlayers}
                   benchPlayers={benchPlayers}
+	          setStats={setStats}
                 />
 	        <StatsPanel stats={stats} />
               </aside>

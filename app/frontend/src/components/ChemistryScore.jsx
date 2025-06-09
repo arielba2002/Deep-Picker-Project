@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CircleProgressBar from "./CircleProgressBar";
 import "./ChemistryScore.css";
 
-function ChemistryScore({ lineupPlayers, benchPlayers }) {
+function ChemistryScore({ lineupPlayers, benchPlayers, setStats }) {
   const [score, setScore] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,7 +18,8 @@ function ChemistryScore({ lineupPlayers, benchPlayers }) {
       });
       const data = await response.json();
       console.log(JSON.stringify({"player_ids": lineupPlayers.concat(benchPlayers).map(o => o.id)}))
-      setScore(data.predicted_score);
+      setStats(data.prediction)
+      setScore(data.prediction["Points"]);
     } catch (error) {
       console.error("Error calculating chemistry score:", error);
     } finally {
