@@ -5,6 +5,7 @@ import SignIn from "./components/SignIn";
 import SignUp from "./components/SignUp";
 
 import ChemistryScore from "./components/ChemistryScore";
+import StatsPanel from "./components/StatsPanel";
 import Lineup from "./components/Lineup";
 import Bench from "./components/Bench";
 import SearchPlayers from "./components/SearchPlayers";
@@ -16,11 +17,11 @@ import AdminUsers from "./components/AdminUsers";
 function App() {
 
   const [lineupPlayers, setLineupPlayers] = useState([
-    { id: 1, name: "not chosen", bottom: "20%", left: "50%", image: unchosen },
-    { id: 2, name: "not chosen", bottom: "33%", left: "80%", image: unchosen },
-    { id: 3, name: "not chosen", bottom: "67%", left: "25%", image: unchosen },
-    { id: 4, name: "not chosen", bottom: "67%", left: "60%", image: unchosen },
-    { id: 5, name: "not chosen",  bottom: "55%", left: "38%", image: unchosen },
+    { id: 1, name: "not chosen", position: "pointGuard", image: unchosen },
+    { id: 2, name: "not chosen", position: "shootingGuard", image: unchosen },
+    { id: 3, name: "not chosen", position: "smallForward", image: unchosen },
+    { id: 4, name: "not chosen", position: "powerForward", image: unchosen },
+    { id: 5, name: "not chosen", position: "center", image: unchosen },
   ]);
 
   const [benchPlayers, setBenchPlayers] = useState([
@@ -28,8 +29,10 @@ function App() {
     { id: 7, name: "not chosen", image: unchosen },
     { id: 8, name: "not chosen", image: unchosen },
   ]);
-
   const [selectedPlayer, setSelectedPlayer] = useState(null);
+
+  const [stats, setStats] = useState({
+  })
 
   const updatePlayerName = (section, id, newName, newImage, newID) => {
     if (section === "lineup") {
@@ -61,7 +64,9 @@ function App() {
                 <ChemistryScore
                   lineupPlayers={lineupPlayers}
                   benchPlayers={benchPlayers}
+	          setStats={setStats}
                 />
+	        <StatsPanel stats={stats} />
               </aside>
               <main className="court-panel">
                 <Lineup

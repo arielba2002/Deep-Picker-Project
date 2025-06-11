@@ -9,7 +9,7 @@ function getColor(value, max) {
   return `rgb(${r},${g},0)`;
 }
 
-export default function CircleProgressBar({ value, max = 150, size = 140, strokeWidth = 14 }) {
+export default function CircleProgressBar({ value, max = 100, size = 140, strokeWidth = 14 }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const progress = Math.max(0, Math.min(value, max));

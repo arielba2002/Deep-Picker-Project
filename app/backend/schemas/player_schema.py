@@ -4,6 +4,7 @@ import numpy
 from pydantic import BaseModel
 from typing import Optional
 from typing import List
+from typing import Dict
 
 class PlayerBase(BaseModel):
     id: int
@@ -54,4 +55,4 @@ class PredictionRequest(BaseModel):
     player_ids: List[int]
     
 class PredictionResponse(BaseModel):
-    predicted_score: int
+    prediction: Dict[str, float] = {}

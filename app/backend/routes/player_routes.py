@@ -66,5 +66,6 @@ def predict_score(request: player_schema.PredictionRequest):
             detail="Exactly 8 player IDs are required"
         )
         
-    predicted_score = player_controller.predict_team_score(request.player_ids)
-    return player_schema.PredictionResponse(predicted_score=predicted_score)
+    prediction = player_controller.predict_team_score(request.player_ids)
+    return player_schema.PredictionResponse(prediction=prediction)
+
