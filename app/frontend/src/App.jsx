@@ -87,6 +87,8 @@ function App() {
                 <SearchPlayers
                   selectedPlayer={selectedPlayer}
                   updatePlayerName={updatePlayerName}
+                  lineupPlayers={lineupPlayers}
+                  benchPlayers={benchPlayers}
                 />
               </aside>
             </div>

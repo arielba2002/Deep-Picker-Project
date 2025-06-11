@@ -49,7 +49,6 @@ class Player(PlayerBase):
 class PlayerSuggestion(BaseModel):
     id: int
     playerName: str
-    team: str
     image: str 
 
 class PredictionRequest(BaseModel):
