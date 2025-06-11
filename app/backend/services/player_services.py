@@ -277,7 +277,7 @@ def search_players(prefix: str, limit: int = 100) -> List[player_schema.PlayerSu
     seen_names = set()  # Track seen player names to avoid duplicates
 
     for p in _fetch_players():
-        if p["playerName"].lower().startswith(prefix_lower):
+        if prefix_lower in p["playerName"].lower():
             # Only add if we haven't seen this player ID or name before
             if p["id"] not in seen_ids and p["playerName"] not in seen_names:
                 seen_ids.add(p["id"])
