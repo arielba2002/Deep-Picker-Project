@@ -171,7 +171,10 @@ def predict_score(player_ids: List[int]) -> int:
             if player["id"] in player_ids
     ]
 
-    prediction = y_scaler.inverse_transform(nba_team_predictor_model.predict(preprocess_player_list(team_data)))
+    scaled_prediction = nba_team_predictor_model.predict(preprocess_player_list(team_data))
+    
+    prediction = y_scaler.inverse_transform(scaled_prediction)
+    
     
     performance_labels = [
     "Points", "Assists", "Rebounds", "Blocks", "Steals",
@@ -179,10 +182,35 @@ def predict_score(player_ids: List[int]) -> int:
     "FTM", "FTA", "OREB", "DREB", "Fouls", "Turnovers"
     ]
     
+    negative_labels = ["Conf Rank", "Fouls", "Turnovers"]
+    negative_indexes = [i for i, label in enumerate(performance_labels) if label in negative_labels]
+
+    adjusted_scaled_prediction = scaled_prediction.copy()
+    for idx in negative_indexes:
+        adjusted_scaled_prediction[0, idx] = 1 - adjusted_scaled_prediction[0, idx]
+
+    # Compute chemistry score as a percentage
+    team_strength_percentage = adjusted_scaled_prediction.mean() * 100
+
+    # Round and clip chemistry score between 0 and 100
+    chemistry_score = int(round(team_strength_percentage))
+    chemistry_score = max(0, min(100, chemistry_score))
+
+
     predicted_stats = {}
 
-    for j, label in enumerate(performance_labels):  # Show first 8 metrics
-        predicted = prediction[0, j]
-        predicted_stats[label] = predicted
+    for j, label in enumerate(performance_labels):
+        predicted = float(prediction[0, j])
+        if label == "Win %":
+            predicted_stats[label] = round(predicted, 3)
+        elif label == "Conf Rank":
+            predicted_stats[label] = int(round(predicted))
+            print(round(predicted))
+            print(predicted)
+        else:
+            predicted_stats[label] = round(predicted, 1)
     
+    predicted_stats["Chemistry Score"] = chemistry_score
+    print(f"Predicted Stats: {predicted_stats}")
+
     return predicted_stats

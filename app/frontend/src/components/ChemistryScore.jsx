@@ -19,7 +19,7 @@ function ChemistryScore({ lineupPlayers, benchPlayers, setStats }) {
       const data = await response.json();
       console.log(JSON.stringify({"player_ids": lineupPlayers.concat(benchPlayers).map(o => o.id)}))
       setStats(data.prediction)
-      setScore(data.prediction["Points"]);
+      setScore(data.prediction["Chemistry Score"]);
     } catch (error) {
       console.error("Error calculating chemistry score:", error);
     } finally {
@@ -34,11 +34,11 @@ function ChemistryScore({ lineupPlayers, benchPlayers, setStats }) {
         {loading ? (
           <div className="spinner"></div>
         ) : (
-          <CircleProgressBar value={score !== null ? score : 0} max={150} />
+          <CircleProgressBar value={score !== null ? score : 0} max={100} />
         )}
       </div>
       <div className="chemistry-score-subtitle">
-        Team chemistry is measured from 0 (poor) to 150 (excellent).
+        0 (poor) to 100 (excellent)
       </div>
       <button 
         className="calculate-button" 
