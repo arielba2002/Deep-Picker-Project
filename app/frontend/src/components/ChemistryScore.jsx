@@ -18,7 +18,14 @@ function ChemistryScore({ lineupPlayers, benchPlayers, setStats }) {
       });
       const data = await response.json();
       console.log(JSON.stringify({"player_ids": lineupPlayers.concat(benchPlayers).map(o => o.id)}))
-      setStats(data.prediction)
+      // here i dont want to set the stat of the data.prediction["Chemistry Score"] which is the last element
+      // setStats(data.prediction) will also add the Chemistry Score to the stats
+      setStats(
+        Object.fromEntries(
+          Object.entries(data.prediction).slice(0, -1)
+        )
+      );
+
       setScore(data.prediction["Chemistry Score"]);
     } catch (error) {
       console.error("Error calculating chemistry score:", error);

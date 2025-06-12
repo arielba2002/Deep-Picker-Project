@@ -339,20 +339,24 @@ def predict_score(player_ids: List[int]) -> int:
     "FTM", "FTA", "OREB", "DREB", "Fouls", "Turnovers"
     ]
     
-    negative_labels = ["Conf Rank", "Fouls", "Turnovers"]
-    negative_indexes = [i for i, label in enumerate(performance_labels) if label in negative_labels]
 
     adjusted_scaled_prediction = scaled_prediction.copy()
-    for idx in negative_indexes:
-        adjusted_scaled_prediction[0, idx] = 1 - adjusted_scaled_prediction[0, idx]
 
-    # Compute chemistry score as a percentage
-    team_strength_percentage = adjusted_scaled_prediction.mean() * 100
+
+    win_pct = adjusted_scaled_prediction[0, 5] * 1.2  # Multiply Win % by 1/4
+    print(adjusted_scaled_prediction[0, 5])
+    print("Win %:", win_pct)
+
+    # chemistry score is based on the win percentage
+    team_strength_percentage = win_pct * 100
+
+
+
+
 
     # Round and clip chemistry score between 0 and 100
     chemistry_score = int(round(team_strength_percentage))
     chemistry_score = max(0, min(100, chemistry_score))
-
 
     predicted_stats = {}
 
@@ -377,6 +381,20 @@ def predict_score(player_ids: List[int]) -> int:
     if "FGA" in predicted_stats and "FGM" in predicted_stats:
         fg_percent = (predicted_stats["FGM"] / predicted_stats["FGA"]) * 100 if predicted_stats["FGA"] > 0 else 0
         predicted_stats["FG%"] = round(fg_percent, 1)
+    
+    # but i want each of them to be after the original stats, i want the % stats to be after the A and M stats
+    ordered_stats = {}
+    for label in performance_labels:
+        if label in predicted_stats:
+            ordered_stats[label] = predicted_stats[label]
+        if label == "3PA":
+            ordered_stats["3P%"] = predicted_stats["3P%"]
+        if label == "FTA":
+            ordered_stats["FT%"] = predicted_stats["FT%"]
+        if label == "FGA":
+            ordered_stats["FG%"] = predicted_stats["FG%"]
+    predicted_stats = ordered_stats
+
 
     predicted_stats["Chemistry Score"] = chemistry_score
     print(f"Predicted Stats: {predicted_stats}")
