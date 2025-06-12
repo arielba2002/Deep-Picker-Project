@@ -367,6 +367,17 @@ def predict_score(player_ids: List[int]) -> int:
         else:
             predicted_stats[label] = round(predicted, 1)
     
+    # i want to create from 3PA and 3PM the 3P% and from FTA and FTM the FT% amd from FGA and FGM the FG%
+    if "3PA" in predicted_stats and "3PM" in predicted_stats:
+        three_percent = (predicted_stats["3PM"] / predicted_stats["3PA"]) * 100 if predicted_stats["3PA"] > 0 else 0
+        predicted_stats["3P%"] = round(three_percent, 1)
+    if "FTA" in predicted_stats and "FTM" in predicted_stats:
+        ft_percent = (predicted_stats["FTM"] / predicted_stats["FTA"]) * 100 if predicted_stats["FTA"] > 0 else 0
+        predicted_stats["FT%"] = round(ft_percent, 1)
+    if "FGA" in predicted_stats and "FGM" in predicted_stats:
+        fg_percent = (predicted_stats["FGM"] / predicted_stats["FGA"]) * 100 if predicted_stats["FGA"] > 0 else 0
+        predicted_stats["FG%"] = round(fg_percent, 1)
+
     predicted_stats["Chemistry Score"] = chemistry_score
     print(f"Predicted Stats: {predicted_stats}")
 
