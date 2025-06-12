@@ -12,42 +12,69 @@
   display: flex;
   flex-direction: row;
   gap: 32px;
-  margin-bottom: -56px; /* more overlap for bigger circles */
+  margin-bottom: -56px;
   z-index: 2;
   position: relative;
   justify-content: center;
   width: 100%;
 }
   
-  .bench-player {
+.bench-player {
   cursor: pointer;
   text-align: center;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.bench-player:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 0 6px #e0e7ef44, 0 10px 25px rgba(0,0,0,0.25);
-}
-.bench-player.selected {
-  border-radius: 50%;
-  padding: 3px;
-  box-shadow: 0 0 0 6px #2563eb55, 0 10px 25px rgba(37,99,235,0.16);
-  background: #f0f8ff;
-}
-.bench-player-image {
-  background-color: #eee;
-  width: 104px;
-  height: 104px;
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 10px 28px rgba(30,41,59,0.28), 0 2px 10px rgba(59,130,246,0.10);
-  position: relative;
-  z-index: 2;
-  border: 4px solid #fff;
-  transition: box-shadow 0.18s, border 0.18s;
+  transition: transform 0.2s ease-in-out;
 }
 
-  .bench-bar {
+.bench-player:hover {
+  transform: scale(1.08);
+}
+
+.bench-player.selected {
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.bench-player-image {
+  background-color: #eee;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease-in-out;
+}
+
+.bench-player-label {
+  margin-top: 4px;
+  font-size: 1.2rem;
+  color: #333;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out;
+}
+
+.bench-player-position {
+  margin-top: 4px;
+  font-size: 1.2rem;
+  color: #fff;
+  font-weight: bold;
+  transition: transform 0.2s ease-in-out;
+}
+
+.bench-player.selected .bench-player-image {
+  transform: scale(1.5);
+  transition: transform 0.2s ease-in-out;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.bench-player.selected .bench-player-label {
+  transform: translateY(30px);
+}
+
+.bench-player.selected .bench-player-position {
+  transform: translateY(30px);
+}
+
+.bench-bar {
   width: 92%;
   max-width: 440px;
   height: 28px;
@@ -61,7 +88,7 @@
   border: 2.5px solid #fbbf24;
 }
 
-  @media (max-width: 900px) {
+@media (max-width: 900px) {
   .bench-players-row {
     gap: 12px;
     margin-bottom: -34px;
@@ -77,20 +104,14 @@
   }
 }
 
-  @media (max-width: 600px) {
-    .bench-bar {
-      height: 14px;
-      max-width: 220px;
-      margin-top: -10px;
-    }
-    .bench-player-image {
-      width: 56px;
-      height: 56px;
-    }
+@media (max-width: 600px) {
+  .bench-bar {
+    height: 14px;
+    max-width: 220px;
+    margin-top: -10px;
   }
-  
-  .bench-player.selected .bench-player-image {
-    transform: scale(1.5); /* Increase the image size by 20% */
-    transition: transform 0.3s ease-in-out;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  .bench-player-image {
+    width: 56px;
+    height: 56px;
   }
+}

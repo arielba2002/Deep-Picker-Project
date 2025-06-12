@@ -70,7 +70,6 @@ function SearchPlayers({ selectedPlayer, updatePlayerName, lineupPlayers, benchP
     <div className="search-container" ref={searchContainerRef}>
       <div className="replace-player-card">
         <div className="replace-player-header">
-          <span className="replace-icon" role="img" aria-label="replace">🔄</span>
           <h2>Replace Selected Player</h2>
         </div>
         <div className="replace-player-subtitle">Search and select a new player to substitute in your lineup or bench.</div>
@@ -95,7 +94,10 @@ function SearchPlayers({ selectedPlayer, updatePlayerName, lineupPlayers, benchP
                   alt={suggestion.name}
                   className="suggestion-image"
                 />
-                <span className="suggestion-name">{suggestion.playerName}</span>
+                <div className="suggestion-info">
+                  <span className="suggestion-name">{suggestion.playerName}</span>
+                  <span className="suggestion-position">{suggestion.position || 'Position not specified'}</span>
+                </div>
               </li>
             ))}
           </ul>
