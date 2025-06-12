@@ -343,7 +343,7 @@ def predict_score(player_ids: List[int]) -> int:
     adjusted_scaled_prediction = scaled_prediction.copy()
 
 
-    win_pct = adjusted_scaled_prediction[0, 5] * 1.2  # Multiply Win % by 1/4
+    win_pct = adjusted_scaled_prediction[0, 5] * 1.2
     print(adjusted_scaled_prediction[0, 5])
     print("Win %:", win_pct)
 
