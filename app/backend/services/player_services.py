@@ -287,6 +287,7 @@ def search_players(prefix: str, limit: int = 100) -> List[player_schema.PlayerSu
                         id=p["id"],
                         playerName=p["playerName"],
                         image=p["image"],
+                        position=p["position"]
                     )
                 )
                 if len(matches) >= limit:

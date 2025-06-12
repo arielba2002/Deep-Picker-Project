@@ -68,9 +68,6 @@ function Lineup({ players, setSelectedPlayer, selectedPlayer, section }) {
             className="player-image"
           />
           <div className="player-label">{player.name}</div>
-          <div className="player-position">
-            {positionLabels[player.position] || ""}
-          </div>
         </div>
       ))}
     </div>

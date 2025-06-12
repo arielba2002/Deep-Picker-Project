@@ -50,6 +50,7 @@ class PlayerSuggestion(BaseModel):
     id: int
     playerName: str
     image: str 
+    position: str
 
 class PredictionRequest(BaseModel):
     player_ids: List[int]
