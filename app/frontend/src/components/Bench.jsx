@@ -3,16 +3,6 @@ import React from "react";
 import "./Bench.css";
 
 function Bench({ players, setSelectedPlayer, selectedPlayer, section }) {
-  const handlePlayerClick = (playerId) => {
-    if (selectedPlayer && selectedPlayer.section === section && selectedPlayer.id === playerId) {
-      // If the clicked player is already selected, unselect it
-      setSelectedPlayer(null);
-    } else {
-      // Otherwise, select the clicked player
-      setSelectedPlayer({ section, id: playerId });
-    }
-  };
-
   return (
     <div className="bench-container">
       <div className="bench-players-row">
@@ -26,10 +16,10 @@ function Bench({ players, setSelectedPlayer, selectedPlayer, section }) {
                 ? "selected"
                 : ""
             }`}
-            onClick={() => handlePlayerClick(player.id)}
+            onClick={() => setSelectedPlayer({ section, id: player.id })}
           >
             <img src={player.image} alt={player.name} className="bench-player-image" />
-            <div className="bench-player-label">{player.name}</div>
+            <div className="player-label">{player.name}</div>
           </div>
         ))}
       </div>
