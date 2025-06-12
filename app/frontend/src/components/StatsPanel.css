@@ -1,11 +1,10 @@
 /* src/components/StatsPanel.css */
 
 :root {
-  --panel-bg: #f5f7fa;
-  --row-bg-even: #ffffff;
+  --panel-bg: #ffffff;
   --row-bg-odd: #f0f4f8;
-  --accent: #ff6f61;
-  --text-main: #102a43;
+  --accent: #2575FC;
+  --text-main: #112A43;
   --text-sub: #334e68;
 }
 
@@ -14,21 +13,22 @@
   border-radius: 8px;
   padding: 16px;
   max-width: 340px;
-  max-height: 400px;
+  max-height: 550px;
   overflow-y: auto;
   margin: 0 auto;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .stats-panel-container h2 {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 600;
   color: var(--text-main);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 12px;
-  border-bottom: 2px solid var(--accent);
+  border-bottom: 4px solid var(--accent);
   padding-bottom: 4px;
+  text-align: center;
 }
 
 .stats-list {
@@ -41,29 +41,23 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--row-bg-even);
+  background: var(--row-bg-odd);
   padding: 10px 12px;
   margin-bottom: 8px;
-  border-left: 4px solid var(--accent);
+  /* border-left: 4px solid var(--accent); */
   transition: background 0.2s;
 }
 
-.stat-item:nth-child(odd) {
-  background: var(--row-bg-odd);
-}
-
-.stat-item:hover {
-  background: #e1e8f0;
-}
-
 .stat-label {
-  font-size: 0.95rem;
+  font-size: 1.4rem;
   font-weight: 500;
   color: var(--text-sub);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .stat-value {
-  font-size: 1.1rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--accent);
 }
