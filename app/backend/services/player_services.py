@@ -287,7 +287,6 @@ def search_players(prefix: str, limit: int = 100) -> List[player_schema.PlayerSu
                         id=p["id"],
                         playerName=p["playerName"],
                         image=p["image"],
-                        position=p["position"]
                     )
                 )
                 if len(matches) >= limit:
@@ -340,20 +339,24 @@ def predict_score(player_ids: List[int]) -> int:
     "FTM", "FTA", "OREB", "DREB", "Fouls", "Turnovers"
     ]
     
-    negative_labels = ["Conf Rank", "Fouls", "Turnovers"]
-    negative_indexes = [i for i, label in enumerate(performance_labels) if label in negative_labels]
 
     adjusted_scaled_prediction = scaled_prediction.copy()
-    for idx in negative_indexes:
-        adjusted_scaled_prediction[0, idx] = 1 - adjusted_scaled_prediction[0, idx]
 
-    # Compute chemistry score as a percentage
-    team_strength_percentage = adjusted_scaled_prediction.mean() * 100
+
+    win_pct = adjusted_scaled_prediction[0, 5] * 1.2
+    print(adjusted_scaled_prediction[0, 5])
+    print("Win %:", win_pct)
+
+    # chemistry score is based on the win percentage
+    team_strength_percentage = win_pct * 100
+
+
+
+
 
     # Round and clip chemistry score between 0 and 100
     chemistry_score = int(round(team_strength_percentage))
     chemistry_score = max(0, min(100, chemistry_score))
-
 
     predicted_stats = {}
 
@@ -368,6 +371,31 @@ def predict_score(player_ids: List[int]) -> int:
         else:
             predicted_stats[label] = round(predicted, 1)
     
+    # i want to create from 3PA and 3PM the 3P% and from FTA and FTM the FT% amd from FGA and FGM the FG%
+    if "3PA" in predicted_stats and "3PM" in predicted_stats:
+        three_percent = (predicted_stats["3PM"] / predicted_stats["3PA"]) * 100 if predicted_stats["3PA"] > 0 else 0
+        predicted_stats["3P%"] = round(three_percent, 1)
+    if "FTA" in predicted_stats and "FTM" in predicted_stats:
+        ft_percent = (predicted_stats["FTM"] / predicted_stats["FTA"]) * 100 if predicted_stats["FTA"] > 0 else 0
+        predicted_stats["FT%"] = round(ft_percent, 1)
+    if "FGA" in predicted_stats and "FGM" in predicted_stats:
+        fg_percent = (predicted_stats["FGM"] / predicted_stats["FGA"]) * 100 if predicted_stats["FGA"] > 0 else 0
+        predicted_stats["FG%"] = round(fg_percent, 1)
+    
+    # but i want each of them to be after the original stats, i want the % stats to be after the A and M stats
+    ordered_stats = {}
+    for label in performance_labels:
+        if label in predicted_stats:
+            ordered_stats[label] = predicted_stats[label]
+        if label == "3PA":
+            ordered_stats["3P%"] = predicted_stats["3P%"]
+        if label == "FTA":
+            ordered_stats["FT%"] = predicted_stats["FT%"]
+        if label == "FGA":
+            ordered_stats["FG%"] = predicted_stats["FG%"]
+    predicted_stats = ordered_stats
+
+
     predicted_stats["Chemistry Score"] = chemistry_score
     print(f"Predicted Stats: {predicted_stats}")
 

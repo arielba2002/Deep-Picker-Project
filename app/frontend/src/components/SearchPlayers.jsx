@@ -94,10 +94,7 @@ function SearchPlayers({ selectedPlayer, updatePlayerName, lineupPlayers, benchP
                   alt={suggestion.name}
                   className="suggestion-image"
                 />
-                <div className="suggestion-info">
-                  <span className="suggestion-name">{suggestion.playerName}</span>
-                  <span className="suggestion-position">{suggestion.position || 'Position not specified'}</span>
-                </div>
+                <span className="suggestion-name">{suggestion.playerName}</span>
               </li>
             ))}
           </ul>
