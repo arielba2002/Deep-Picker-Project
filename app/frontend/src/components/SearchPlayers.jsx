@@ -70,7 +70,7 @@ function SearchPlayers({ selectedPlayer, updatePlayerName, lineupPlayers, benchP
     <div className="search-container" ref={searchContainerRef}>
       <div className="replace-player-card">
         <div className="replace-player-header">
-          <h2>Replace Selected Player</h2>
+          <h2>Select a Player</h2>
         </div>
         <div className="replace-player-subtitle">Search and select a new player to substitute in your lineup or bench.</div>
         <input

@@ -57,3 +57,13 @@ class PredictionRequest(BaseModel):
     
 class PredictionResponse(BaseModel):
     prediction: Dict[str, float] = {}
+
+class TeamResponse(BaseModel):
+    teams: List[str]
+
+class TeamPlayersResponse(BaseModel):
+    team: str
+    players: List[Player]
+
+class TeamWithPlayersResponse(BaseModel):
+    teams: Dict[str, List[Player]]

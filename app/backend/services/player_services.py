@@ -5,7 +5,7 @@ import os
 import requests
 import datetime
 import json
-from typing import List
+from typing import List, Dict
 import json
 import pickle
 from tensorflow.keras.models import load_model
@@ -372,3 +372,55 @@ def predict_score(player_ids: List[int]) -> int:
     print(f"Predicted Stats: {predicted_stats}")
 
     return predicted_stats
+
+def get_all_teams() -> List[str]:
+    """
+    Get all unique team names from the current players data.
+    Filters out invalid team codes like 2TM and 3TM.
+    
+    Returns:
+        List of team names
+    """
+    players = _fetch_players()
+    # Filter out invalid team codes and get unique teams
+    teams = list(set(player["team"] for player in players 
+                    if player["team"] and not player["team"].endswith("TM")))
+    return sorted(teams)
+
+
+def get_top_8_players_by_team(team_name: str) -> List[dict]:
+    """
+    Get the top 8 players for a specific team based on minutes played (minutesPg).
+    
+    Args:
+        team_name: Name of the team
+        
+    Returns:
+        List of top 8 players for the team, sorted by minutes played (descending)
+    """
+    players = _fetch_players()
+    
+    # Filter players by team
+    team_players = [player for player in players if player["team"] == team_name]
+    
+    # Sort by minutes played (descending) and take top 8
+    team_players.sort(key=lambda x: x["minutesPg"] or 0, reverse=True)
+    top_8_players = team_players[:8]
+    
+    return top_8_players
+
+
+def get_all_teams_with_top_8_players() -> Dict[str, List[dict]]:
+    """
+    Get all teams with their top 8 players based on minutes played.
+    
+    Returns:
+        Dictionary where keys are team names and values are lists of top 8 players
+    """
+    teams = get_all_teams()
+    teams_with_players = {}
+    
+    for team in teams:
+        teams_with_players[team] = get_top_8_players_by_team(team)
+    
+    return teams_with_players

@@ -468,7 +468,7 @@ html, body {
   z-index: 301;
 }
 
-/* make sure our “professional” styling overrides the old one */
+/* make sure our "professional" styling overrides the old one */
 .user-dropdown.professional-dropdown {
   background: #fff;
   border: 2px solid var(--nba-accent);
@@ -545,4 +545,26 @@ html, body {
 .professional-dropdown .logout-btn {
   width: 100%;
   margin: 0.5rem 0 0;
+}
+
+/* Clear Team Button Styling */
+.clear-team-button {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1.1rem;
+  color: #fff;
+  background: #FABE25;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  margin-bottom: 1.2rem;
+}
+
+.clear-team-button:hover {
+  background: #C58614;
+}
+
+.clear-team-button:active {
+  transform: translateY(0);
 }

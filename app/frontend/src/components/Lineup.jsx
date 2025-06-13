@@ -17,29 +17,18 @@ function Lineup({ players, setSelectedPlayer, selectedPlayer, section }) {
 
   // Define basketball positions with better spacing and visibility
   const positions = {
-    pointGuard:    { left: '12%', bottom: '56%' },
+    pointGuard:    { left: '70%', bottom: '25%'  },
     shootingGuard: { left: '30%', bottom: '25%' },
-    smallForward:  { left: '70%', bottom: '25%' },
+    smallForward:  { left: '12%', bottom: '56%'  },
     powerForward:  { left: '88%', bottom: '50%' },
     center:        { left: '50%', bottom: '45%' },
-    shootingPoint: { left: '40%', bottom: '40%' },
-    comboGuard:    { left: '20%', bottom: '40%' },
-    swingman:      { left: '80%', bottom: '40%' },
-    stretchFour:   { left: '60%', bottom: '40%' },
-    postPlayer:    { left: '50%', bottom: '70%' },
-    // Add additional positions
-    pointForward:      { left: '35%', bottom: '20%' },
-    smallBallCenter:   { left: '65%', bottom: '20%' },
-    stretchFive:       { left: '50%', bottom: '45%' },
-    pickAndRoll:       { left: '45%', bottom: '50%' },
-    wing:              { left: '70%', bottom: '35%' }
   };
 
   // Add position labels for better visibility
   const positionLabels = {
-    pointGuard:    'SF',
+    pointGuard:    'PG',
     shootingGuard: 'SG',
-    smallForward:  'PG',
+    smallForward:  'SF',
     powerForward:  'PF',
     center:        'C',
     shootingPoint: 'SP',
