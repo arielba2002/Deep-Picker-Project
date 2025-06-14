@@ -1,5 +1,5 @@
 # File: ./Deep-Picker-Project/app/backend/controllers/player_controller.py
-from services import player_services
+from services import player_services_minimal as player_services
 from schemas import player_schema
 from typing import List, Dict
 
@@ -26,7 +26,7 @@ def search_players(prefix: str, limit: int = 4) -> List[player_schema.PlayerSugg
     return player_services.search_players(prefix, limit)
 
 
-def predict_team_score(player_ids: List[int]) -> int:
+def predict_team_score(player_ids: List[int]) -> Dict[str, float]:
     """
     Predict the score for a team composed of the specified players.
     
@@ -34,7 +34,7 @@ def predict_team_score(player_ids: List[int]) -> int:
         player_ids: List of player IDs in the team
         
     Returns:
-        Predicted score
+        Predicted score data
     """
     return player_services.predict_score(player_ids)
 

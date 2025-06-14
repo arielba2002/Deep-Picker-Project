@@ -1,0 +1,242 @@
+# all-in-one.yaml
+
+# 1) Secret for DB credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+stringData:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+
+---
+# 2) PVC for Postgres data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+# 3) Postgres Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      initContainers:
+      - name: init-pvc
+        image: busybox
+        imagePullPolicy: Always
+        command:
+          - sh
+          - -c
+          - mkdir -p /mnt/pgdata
+        volumeMounts:
+        - name: pgdata
+          mountPath: /mnt
+      containers:
+      - name: postgres
+        image: postgres:15
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          value: mydb
+        - name: PGDATA
+          value: /var/lib/postgresql/data
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+          subPath: pgdata
+      volumes:
+      - name: pgdata
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+# 4) Service for Postgres (ClusterIP, internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+spec:
+  ports:
+  - port: 5432
+    targetPort: 5432
+  selector:
+    app: db
+
+---
+# 5) Backend Deployment (waits for DB)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox
+        command:
+          - sh
+          - -c
+          - |
+            echo "⏳ waiting for Postgres…"
+            until nc -z db 5432; do sleep 2; done
+      containers:
+      - name: backend
+        image: docker.io/eliadb/deep-picker-backend:latest
+        imagePullPolicy: Always
+        env:
+        - name: DATABASE_URL
+          value: postgresql://postgres:postgres@db:5432/mydb
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8888"
+        - name: FRONTEND_URL
+          value: "*"
+        - name: MPLCONFIGDIR
+          value: "/tmp/matplotlib"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          failureThreshold: 30
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 15
+          periodSeconds: 10
+        ports:
+        - containerPort: 8888
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: matplotlib-volume
+          mountPath: /tmp/matplotlib
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+      - name: matplotlib-volume
+        emptyDir: {}
+
+---
+# 6) Service for Backend (ClusterIP, internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+  - port: 8888
+    targetPort: 8888
+  selector:
+    app: backend
+
+---
+# 7) Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: docker.io/eliadb/deep-picker-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+
+---
+# 8) Service for Frontend
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  annotations:
+    metallb.universe.tf/address-pool: external-ips
+spec:
+  type: LoadBalancer
+  selector:
+    app: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+    - name: https
+      port: 443
+      targetPort: 3000
+
+# 5) (Optional) Route for Postgres
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: db
+spec:
+  to:
+    kind: Service
+    name: db
+  port:
+    targetPort: 5432

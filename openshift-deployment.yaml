@@ -1,0 +1,444 @@
+# OpenShift Deployment Configuration for Deep Picker Project
+# This file includes all necessary components with proper network policies
+
+# ---
+# apiVersion: v1
+# kind: Namespace
+# metadata:
+#   name: deep
+#   labels:
+#     name: deep
+
+# ---
+# Network Policy: Allow all traffic within the namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-namespace-traffic
+  namespace: deep
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: deep
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: deep
+
+---
+# Network Policy: Allow frontend external access
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-external
+  namespace: deep
+spec:
+  podSelector:
+    matchLabels:
+      app: frontend
+  policyTypes:
+  - Ingress
+  ingress:
+  - {} # Allow all ingress traffic to frontend
+
+---
+# Network Policy: Backend only accessible from frontend and within namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-policy
+  namespace: deep
+spec:
+  podSelector:
+    matchLabels:
+      app: backend
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: frontend
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: deep
+
+---
+# Network Policy: Database only accessible from backend (temporarily disabled for debugging)
+# apiVersion: networking.k8s.io/v1
+# kind: NetworkPolicy
+# metadata:
+#   name: database-policy
+#   namespace: deep
+# spec:
+#   podSelector:
+#     matchLabels:
+#       app: db
+#   policyTypes:
+#   - Ingress
+#   ingress:
+#   - from:
+#     - podSelector:
+#         matchLabels:
+#           app: backend
+#     ports:
+#     - protocol: TCP
+#       port: 5432
+
+---
+# Secret for database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: deep
+type: Opaque
+stringData:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+
+---
+# PVC for PostgreSQL data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: deep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# PostgreSQL Database Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: deep
+  labels:
+    app: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      containers:
+              - name: postgres
+          image: quay.io/rhl193000/db:latest
+          imagePullPolicy: Always
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_USER
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: POSTGRES_PASSWORD
+        - name: POSTGRES_DB
+          value: mydb
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        ports:
+        - containerPort: 5432
+          name: postgres
+        volumeMounts:
+        - name: pgdata
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000370000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -U
+            - postgres
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: pgdata
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+# Database Service (ClusterIP - internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: deep
+  labels:
+    app: db
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5432
+    targetPort: 5432
+    name: postgres
+  selector:
+    app: db
+
+---
+# Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: deep
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+              - name: backend
+          image: quay.io/rhl193000/backend:latest
+          imagePullPolicy: Always
+        env:
+        - name: DATABASE_URL
+          value: postgresql://postgres:postgres@db:5432/mydb
+        - name: HOST
+          value: "0.0.0.0"
+        - name: PORT
+          value: "8888"
+        - name: FRONTEND_URL
+          value: "*"
+        - name: MPLCONFIGDIR
+          value: "/tmp/matplotlib"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        ports:
+        - containerPort: 8888
+          name: http
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000370000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: tmp-volume
+          mountPath: /tmp
+        - name: matplotlib-volume
+          mountPath: /tmp/matplotlib
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          failureThreshold: 60
+          periodSeconds: 10
+          initialDelaySeconds: 20
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8888
+          initialDelaySeconds: 15
+          periodSeconds: 10
+      volumes:
+      - name: tmp-volume
+        emptyDir: {}
+      - name: matplotlib-volume
+        emptyDir: {}
+
+---
+# Backend Service (ClusterIP - internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: deep
+  labels:
+    app: backend
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8888
+    targetPort: 8888
+    name: http
+  selector:
+    app: backend
+
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: deep
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      initContainers:
+      - name: wait-for-backend
+        image: busybox:1.35
+        imagePullPolicy: Always
+        command:
+          - sh
+          - -c
+          - |
+            echo "⏳ Waiting for backend service to be ready..."
+            until nc -z backend 8888; do 
+              echo "Waiting for backend service..."
+              sleep 3
+            done
+            echo "✅ Backend service is ready!"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000370000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+      containers:
+              - name: frontend
+          image: quay.io/rhl193000/frontend:latest
+          imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+          name: http
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "50m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000370000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          seccompProfile:
+            type: RuntimeDefault
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+
+---
+# Frontend Service (LoadBalancer - external access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: deep
+  labels:
+    app: frontend
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: frontend-tls
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 80
+    targetPort: 3000
+    name: http
+  - port: 443
+    targetPort: 3000
+    name: https
+  selector:
+    app: frontend
+
+---
+# # Route for OpenShift (alternative to LoadBalancer)
+# apiVersion: route.openshift.io/v1
+# kind: Route
+# metadata:
+#   name: deep-frontend
+#   namespace: deep
+#   labels:
+#     app: frontend
+# spec:
+#   to:
+#     kind: Service
+#     name: frontend
+#     weight: 100
+#   port:
+#     targetPort: http
+#   tls:
+#     termination: edge
+#     insecureEdgeTerminationPolicy: Redirect
+#   wildcardPolicy: None 

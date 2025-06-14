@@ -1,0 +1,324 @@
+# Simple OpenShift Deployment - Deep Namespace
+
+---
+# Secret for database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: deep
+type: Opaque
+stringData:
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "postgres"
+
+---
+# PVC for PostgreSQL data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: deep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+# PostgreSQL Database Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+  namespace: deep
+  labels:
+    app: db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: db
+  template:
+    metadata:
+      labels:
+        app: db
+    spec:
+      imagePullSecrets:
+      - name: quay-secret
+      containers:
+        - name: postgres
+          image: quay.io/rhl193000/db:latest
+          imagePullPolicy: Always
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              value: mydb
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          ports:
+            - containerPort: 5432
+              name: postgres
+          volumeMounts:
+            - name: pgdata
+              mountPath: /var/lib/postgresql/data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000370000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+      volumes:
+        - name: pgdata
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+
+---
+# Database Service (ClusterIP - internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  namespace: deep
+  labels:
+    app: db
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5432
+      targetPort: 5432
+      name: postgres
+  selector:
+    app: db
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: deep
+  labels:
+    app: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      # make DNS behaviour explicit
+      dnsPolicy: ClusterFirst
+      dnsConfig:
+        searches:
+          - deep.svc.cluster.local
+          - svc.cluster.local
+          - cluster.local
+
+      imagePullSecrets:
+        - name: quay-secret
+
+      # 1) stall startup until DNS & port are ready
+      initContainers:
+        - name: wait-for-db
+          image: tutum/dnsutils:latest
+          command:
+            - sh
+            - -c
+            - |
+              echo "⏳ waiting for DNS on db..."
+              until getent hosts db; do
+                sleep 2
+              done
+              echo "⏳ waiting for TCP on db:5432..."
+              until nc -z db 5432; do
+                sleep 2
+              done
+              echo "✅ db is resolvable and accepting connections"
+
+      containers:
+        - name: backend
+          image: quay.io/rhl193000/backend:latest
+          imagePullPolicy: Always
+          env:
+            # your existing settings…
+            - name: HOST
+              value: "0.0.0.0"
+            - name: PORT
+              value: "8888"
+
+            # ← new DB connection info
+            - name: DB_HOST
+              value: "db"               # short name works in‐namespace
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              value: "mydb"
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: POSTGRES_PASSWORD
+
+            # continue with your other vars…
+            - name: FRONTEND_URL
+              value: "*"
+            - name: MPLCONFIGDIR
+              value: "/tmp/matplotlib"
+            - name: PYTHONUNBUFFERED
+              value: "1"
+          ports:
+            - containerPort: 8888
+              name: http
+
+          # your probes & resources remain unchanged
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            failureThreshold: 60
+            periodSeconds: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8888
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+
+          volumeMounts:
+            - name: tmp-volume
+              mountPath: /tmp
+            - name: matplotlib-volume
+              mountPath: /tmp/matplotlib
+
+      volumes:
+        - name: tmp-volume
+          emptyDir: {}
+        - name: matplotlib-volume
+          emptyDir: {}
+
+---
+# Backend Service (ClusterIP - internal only)
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: deep
+  labels:
+    app: backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8888
+      targetPort: 8888
+      name: http
+  selector:
+    app: backend
+
+---
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: deep
+  labels:
+    app: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      imagePullSecrets:
+      - name: quay-secret
+      containers:
+        - name: frontend
+          image: quay.io/rhl193000/frontend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+              name: http
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "50m"
+            limits:
+              memory: "256Mi"
+              cpu: "200m"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000370000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
+
+---
+# Frontend Service (LoadBalancer - external access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  namespace: deep
+  labels:
+    app: frontend
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 3000
+      name: http
+    - port: 443
+      targetPort: 3000
+      name: https
+  selector:
+    app: frontend 

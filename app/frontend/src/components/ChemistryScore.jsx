@@ -9,7 +9,7 @@ function ChemistryScore({ lineupPlayers, benchPlayers, setStats }) {
   const handleCalculateScore = async () => {
     setLoading(true);
     try {
-      const response = await fetch("http://localhost:8888/api/v1/players/predict-score/", {
+      const response = await fetch("/api/v1/players/predict-score/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

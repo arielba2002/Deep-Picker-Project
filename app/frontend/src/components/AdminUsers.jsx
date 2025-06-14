@@ -6,7 +6,7 @@ export default function AdminUsers() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    fetch("http://localhost:8888/api/v1/users?limit=100")
+    fetch("/api/v1/users?limit=100")
       .then((res) => res.json())
       .then((data) => {
         setUsers(data);

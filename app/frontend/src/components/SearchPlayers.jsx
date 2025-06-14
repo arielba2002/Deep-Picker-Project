@@ -21,7 +21,7 @@ function SearchPlayers({ selectedPlayer, updatePlayerName, lineupPlayers, benchP
     }
 
     const delayDebounceFn = setTimeout(() => {
-      fetch(`http://localhost:8888/api/v1/players/autocomplete/?prefix=${inputValue.trim()}`)
+      fetch(`/api/v1/players/autocomplete/?prefix=${inputValue.trim()}`)
         .then((res) => res.json())
         .then((data) => {
           // Filter out players that are already in lineup or bench

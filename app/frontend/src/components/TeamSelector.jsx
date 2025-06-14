@@ -10,7 +10,7 @@ function TeamSelector({ onTeamSelect, disabled = false }) {
     // Fetch all teams when component mounts
     const fetchTeams = async () => {
       try {
-        const response = await fetch("http://localhost:8888/api/v1/teams/all");
+        const response = await fetch("/api/v1/teams/all");
         const data = await response.json();
         setTeams(data.teams);
       } catch (error) {
@@ -29,7 +29,7 @@ function TeamSelector({ onTeamSelect, disabled = false }) {
 
     try {
       const response = await fetch(
-        `http://localhost:8888/api/v1/teams/${encodeURIComponent(teamName)}/top-players`
+        `/api/v1/teams/${encodeURIComponent(teamName)}/top-players`
       );
       const data = await response.json();
       
