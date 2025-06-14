@@ -11,9 +11,12 @@
   }
   
   .chemistry-score-container h2 {
-    font-size: 1.5rem;
-    color: #333;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #112A43;
     margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;  
   }
   
   .score-display {
@@ -54,7 +57,7 @@
   
   .calculate-button {
     padding: 10px 20px;
-    font-size: 1rem;
+    font-size: 1.2rem;
     color: #fff;
     background: #2575fc;
     border: none;
