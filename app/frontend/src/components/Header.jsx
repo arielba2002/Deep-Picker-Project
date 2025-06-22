@@ -22,7 +22,8 @@ export default function Header() {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    navigate("/signin");
+    // Force a page reload to clear all state
+    window.location.href = "/signin";
   };
 
   // Close dropdown on outside click

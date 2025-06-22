@@ -1,6 +1,13 @@
 # Simple OpenShift Deployment - Deep Namespace
 
 ---
+# Namespace creation
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: deep
+
+---
 # Secret for database credentials
 apiVersion: v1
 kind: Secret
@@ -20,11 +27,12 @@ metadata:
   name: postgres-pvc
   namespace: deep
 spec:
+  storageClassName: local
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
+      storage: 5Gi
 
 ---
 # PostgreSQL Database Deployment
@@ -81,7 +89,7 @@ spec:
               cpu: "500m"
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000370000
+            runAsUser: 1003540000
             allowPrivilegeEscalation: false
             capabilities:
               drop:
@@ -294,7 +302,7 @@ spec:
               cpu: "200m"
           securityContext:
             runAsNonRoot: true
-            runAsUser: 1000370000
+            runAsUser: 1003540000
             allowPrivilegeEscalation: false
             capabilities:
               drop:
@@ -303,7 +311,7 @@ spec:
               type: RuntimeDefault
 
 ---
-# Frontend Service (LoadBalancer - external access)
+# Frontend Service (ClusterIP - internal only)
 apiVersion: v1
 kind: Service
 metadata:
@@ -312,13 +320,31 @@ metadata:
   labels:
     app: frontend
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   ports:
-    - port: 80
+    - port: 3000
       targetPort: 3000
       name: http
-    - port: 443
-      targetPort: 3000
-      name: https
   selector:
-    app: frontend 
+    app: frontend
+
+---
+# Frontend Route (OpenShift external access)
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: frontend-route
+  namespace: deep
+  labels:
+    app: frontend
+spec:
+  to:
+    kind: Service
+    name: frontend
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

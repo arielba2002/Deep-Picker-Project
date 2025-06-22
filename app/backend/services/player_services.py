@@ -8,150 +8,91 @@ import json
 from typing import List, Dict
 import json
 import pickle
+import tensorflow as tf
+import pandas as pd
+import numpy as np
+from tensorflow.keras.models import load_model
+from tensorflow.keras.layers import Lambda
 
-# Try to import ML dependencies - gracefully handle if not available
-try:
-    from tensorflow.keras.models import load_model
-    import tensorflow as tf
-    import pandas as pd
-    import numpy as np
-    from tensorflow.keras.layers import Lambda
-    ML_AVAILABLE = True
-    print("[player_services] TensorFlow dependencies loaded successfully")
-    
-    def mean_pool(t):
-        return tf.reduce_mean(t, axis=1)
+# Define ML-related variables and functions
+unwanted_stats = ["id", "playerName", "team", "season", "playerId", "gamesStarted", "image"]
+per_minute_stats = [
+    "points", "assists", "steals", "blocks", "turnovers", "personalFouls",
+    "offensiveRb", "defensiveRb", "totalRb", "fieldGoals", "fieldAttempts",
+    "threeFg", "threeAttempts", "twoFg", "twoAttempts", "ft", "ftAttempts"
+]
 
-    def max_pool(t):
-        return tf.reduce_max(t, axis=1)
+def mean_pool(t):
+    return tf.reduce_mean(t, axis=1)
 
-    custom_objects = {
-        'mean_pool': mean_pool,
-        'max_pool': max_pool
-    }
-except ImportError as e:
-    print(f"[player_services] ML dependencies not available: {e}")
-    ML_AVAILABLE = False
-    custom_objects = {}
+def max_pool(t):
+    return tf.reduce_max(t, axis=1)
 
-# Try to load ML models - gracefully handle if not available
+custom_objects = {
+    'mean_pool': mean_pool,
+    'max_pool': max_pool
+}
+
+# Load ML models
 script_dir = os.path.dirname(os.path.abspath(__file__))
-x_scaler = None
-y_scaler = None
-nba_team_predictor_model = None
+model_dir = os.path.join(script_dir, '..', 'model')
 
-if ML_AVAILABLE:
-    try:
-        with open(os.path.join(script_dir, '..', '..', 'model', 'x_scaler.pkl'), 'rb') as f:
-            x_scaler = pickle.load(f)
-        with open(os.path.join(script_dir, '..', '..', 'model', 'y_scaler.pkl'), 'rb') as f:
-            y_scaler = pickle.load(f)
-        model_path = os.path.join(script_dir, '..', '..', 'model', 'nba_team_predictor_model.h5')
-        nba_team_predictor_model = load_model(model_path, custom_objects=custom_objects)
-        print("[player_services] ML models loaded successfully")
-    except Exception as e:
-        print(f"[player_services] Could not load ML models: {e}")
-        print("[player_services] Continuing without ML prediction functionality")
-        ML_AVAILABLE = False
+with open(os.path.join(model_dir, 'x_scaler.pkl'), 'rb') as f:
+    x_scaler = pickle.load(f)
+with open(os.path.join(model_dir, 'y_scaler.pkl'), 'rb') as f:
+    y_scaler = pickle.load(f)
+model_path = os.path.join(model_dir, 'nba_team_predictor_model.h5')
+nba_team_predictor_model = load_model(model_path, custom_objects=custom_objects)
 
-# Only define these if we have ML capabilities
-if ML_AVAILABLE:
-    unwanted_stats = ["id", "playerName", "team", "season", "playerId", "gamesStarted", "image"]
-    per_minute_stats = [
-        "points", "assists", "steals", "blocks", "turnovers", "personalFouls",
-        "offensiveRb", "defensiveRb", "totalRb", "fieldGoals", "fieldAttempts",
-        "threeFg", "threeAttempts", "twoFg", "twoAttempts", "ft", "ftAttempts"
-    ]
-else:
-    unwanted_stats = []
-    per_minute_stats = []
+def remove_unwanted_stats(df, stats_to_remove):
+    """Removes unwanted statistic columns from the DataFrame."""
+    return df.drop(columns=stats_to_remove, errors="ignore")
 
-# Only define ML functions if dependencies are available
-if ML_AVAILABLE:
-    def remove_unwanted_stats(df, stats_to_remove):
-        """Removes unwanted statistic columns from the DataFrame."""
-        return df.drop(columns=stats_to_remove, errors="ignore")
+def normalize_columns(df, cols, divisor_col):
+    """Normalizes specified columns by dividing them by a divisor column."""
+    df = df.copy()
+    for col in cols:
+        if col in df.columns and divisor_col in df.columns:
+            df[col] = df.apply(lambda row: row[col] / row[divisor_col] if row[divisor_col] != 0 else 0, axis=1)
+    return df
 
-    def normalize_columns(df, cols, divisor_col):
-        """Normalizes specified columns by dividing them by a divisor column."""
-        df = df.copy()
-        for col in cols:
-            if col in df.columns and divisor_col in df.columns:
-                df[col] = df.apply(lambda row: row[col] / row[divisor_col] if row[divisor_col] != 0 else 0, axis=1)
-        return df
+def one_hot_encode_positions(df, position_col="position"):
+    """Converts the player position column into one-hot encoded columns."""
+    if position_col in df.columns:
+        standard_positions = ["PG", "SG", "SF", "PF", "C"]
+        for pos in standard_positions:
+            df[f"{position_col}_{pos}"] = 0
+        for idx, value in df[position_col].dropna().items():
+            positions = [p.strip().upper() for p in value.replace("/", "-").split("-")]
+            for pos in positions:
+                col_name = f"{position_col}_{pos}"
+                if col_name in df.columns:
+                    df.at[idx, col_name] = 1
+        df = df.drop(columns=[position_col])
+    return df
 
-    def one_hot_encode_positions(df, position_col="position"):
-        """
-        Converts the player position column into one-hot encoded columns,
-        ensuring consistent output for the 5 standard basketball positions.
-
-        :param df: Player statistics DataFrame.
-        :param position_col: Name of the column containing player positions.
-        :return: DataFrame with one-hot encoded position columns.
-        """
-        if position_col in df.columns:
-            standard_positions = ["PG", "SG", "SF", "PF", "C"]
-
-            # Initialize zero columns
-            for pos in standard_positions:
-                df[f"{position_col}_{pos}"] = 0
-
-            # Iterate through rows to set appropriate columns to 1
-            for idx, value in df[position_col].dropna().items():
-                # Normalize and split multi-position strings
-                positions = [p.strip().upper() for p in value.replace("/", "-").split("-")]
-                for pos in positions:
-                    col_name = f"{position_col}_{pos}"
-                    if col_name in df.columns:
-                        df.at[idx, col_name] = 1
-
-            # Drop the original column
-            df = df.drop(columns=[position_col])
-
-        return df
-
-    def preprocess_player_list(player_list, stats_to_remove=None, per_minute_stats=None,
-                                    minutes_col="minutesPg", position_col="position"):
-        """End-to-end pipeline to preprocess player list entry."""
-        if not ML_AVAILABLE:
-            raise Exception("ML dependencies not available for preprocessing")
-        
-        if stats_to_remove is None:
-            stats_to_remove = unwanted_stats
-        if per_minute_stats is None:
-            per_minute_stats = globals()['per_minute_stats']
-        
-        df = pd.DataFrame(player_list)
-        df = remove_unwanted_stats(df, stats_to_remove)
-        df = normalize_columns(df, per_minute_stats, minutes_col)
-        df = one_hot_encode_positions(df, position_col)
-        X = df.to_numpy()
-        X = x_scaler.transform(X.reshape(-1, X.shape[-1])).reshape(X.shape)
-        X = X[np.newaxis, :, :] # Add batch dimension
-
-        return X
-else:
-    # Stub functions when ML not available
-    def remove_unwanted_stats(df, stats_to_remove):
-        return df
+def preprocess_player_list(player_list, stats_to_remove=None, per_minute_stats=None,
+                                minutes_col="minutesPg", position_col="position"):
+    """End-to-end pipeline to preprocess player list entry."""
+    if stats_to_remove is None:
+        stats_to_remove = unwanted_stats
+    if per_minute_stats is None:
+        per_minute_stats = globals()['per_minute_stats']
     
-    def normalize_columns(df, cols, divisor_col):
-        return df
-    
-    def one_hot_encode_positions(df, position_col="position"):
-        return df
-    
-    def preprocess_player_list(player_list, **kwargs):
-        raise Exception("ML dependencies not available for preprocessing")
+    df = pd.DataFrame(player_list)
+    df = remove_unwanted_stats(df, stats_to_remove)
+    df = normalize_columns(df, per_minute_stats, minutes_col)
+    df = one_hot_encode_positions(df, position_col)
+    X = df.to_numpy()
+    X = x_scaler.transform(X.reshape(-1, X.shape[-1])).reshape(X.shape)
+    X = X[np.newaxis, :, :] # Add batch dimension
+    return X
 
-def get_all_players():
+def get_all_players() -> List[dict]:
     """
-    Get all players from the constant data.
-    
-    Returns:
-        List of all players
+    Returns the full cached roster for the current season.
     """
-    return PLAYERS_DATA
+    return _fetch_players()
 
 
 # Module-level cache
@@ -300,14 +241,6 @@ def _fetch_players() -> List[dict]:
     return _players_cache
 
 
-# Public service functions
-def get_all_players() -> List[dict]:
-    """
-    Returns the full cached roster for the current season.
-    """
-    return _fetch_players()
-
-
 def search_players(prefix: str, limit: int = 100) -> List[player_schema.PlayerSuggestion]:
     """
     Search players by name prefix against the in-memory cache.
@@ -367,115 +300,76 @@ def predict_score(player_ids: List[int]) -> Dict[str, float]:
         if pid not in existing_player_ids:
             raise ValueError(f"Player ID {pid} does not exist in the data")
 
-    # If ML models are not available, return mock prediction
-    if not ML_AVAILABLE or not nba_team_predictor_model:
-        print("[player_services] ML models not available, returning mock prediction")
-        return {
-            "Points": 115.2,
-            "Assists": 28.7,
-            "Rebounds": 46.3,
-            "Blocks": 5.8,
-            "Steals": 8.2,
-            "Win %": 0.672,
-            "Conf Rank": 3,
-            "FGM": 42.1,
-            "FGA": 88.4,
-            "FG%": 47.6,
-            "3PM": 12.8,
-            "3PA": 35.2,
-            "3P%": 36.4,
-            "FTM": 18.2,
-            "FTA": 23.7,
-            "FT%": 76.8,
-            "OREB": 10.2,
-            "DREB": 36.1,
-            "Fouls": 20.3,
-            "Turnovers": 14.7,
-            "Chemistry Score": 82
-        }
+    # Create a new JSON variable with only the selected players
+    team_data = [
+            player for player in players
+            if player["id"] in player_ids
+    ]
 
-    try:
-        # Create a new JSON variable with only the selected players
-        team_data = [
-                player for player in players
-                if player["id"] in player_ids
-        ]
-
-        scaled_prediction = nba_team_predictor_model.predict(preprocess_player_list(team_data))
-        
-        prediction = y_scaler.inverse_transform(scaled_prediction)
-        
-        performance_labels = [
-        "Points", "Assists", "Rebounds", "Blocks", "Steals",
-        "Win %", "Conf Rank", "FGM", "FGA", "3PM", "3PA",
-        "FTM", "FTA", "OREB", "DREB", "Fouls", "Turnovers"
-        ]
-
-        adjusted_scaled_prediction = scaled_prediction.copy()
-
-        win_pct = adjusted_scaled_prediction[0, 5] * 1.2
-        print(adjusted_scaled_prediction[0, 5])
-        print("Win %:", win_pct)
-
-        # chemistry score is based on the win percentage
-        team_strength_percentage = win_pct * 100
-
-        # Round and clip chemistry score between 0 and 100
-        chemistry_score = int(round(team_strength_percentage))
-        chemistry_score = max(0, min(100, chemistry_score))
-
-        predicted_stats = {}
-
-        for j, label in enumerate(performance_labels):
-            predicted = float(prediction[0, j])
-            if label == "Win %":
-                predicted_stats[label] = round(predicted, 3)
-            elif label == "Conf Rank":
-                predicted_stats[label] = int(round(predicted))
-                print(round(predicted))
-                print(predicted)
-            else:
-                predicted_stats[label] = round(predicted, 1)
-        
-        # Calculate percentage stats
-        if "3PA" in predicted_stats and "3PM" in predicted_stats:
-            three_percent = (predicted_stats["3PM"] / predicted_stats["3PA"]) * 100 if predicted_stats["3PA"] > 0 else 0
-            predicted_stats["3P%"] = round(three_percent, 1)
-        if "FTA" in predicted_stats and "FTM" in predicted_stats:
-            ft_percent = (predicted_stats["FTM"] / predicted_stats["FTA"]) * 100 if predicted_stats["FTA"] > 0 else 0
-            predicted_stats["FT%"] = round(ft_percent, 1)
-        if "FGA" in predicted_stats and "FGM" in predicted_stats:
-            fg_percent = (predicted_stats["FGM"] / predicted_stats["FGA"]) * 100 if predicted_stats["FGA"] > 0 else 0
-            predicted_stats["FG%"] = round(fg_percent, 1)
-        
-        # Order the stats properly
-        ordered_stats = {}
-        for label in performance_labels:
-            if label in predicted_stats:
-                ordered_stats[label] = predicted_stats[label]
-            if label == "3PA" and "3P%" in predicted_stats:
-                ordered_stats["3P%"] = predicted_stats["3P%"]
-            if label == "FTA" and "FT%" in predicted_stats:
-                ordered_stats["FT%"] = predicted_stats["FT%"]
-            if label == "FGA" and "FG%" in predicted_stats:
-                ordered_stats["FG%"] = predicted_stats["FG%"]
-        predicted_stats = ordered_stats
-
-        predicted_stats["Chemistry Score"] = chemistry_score
-        print(f"Predicted Stats: {predicted_stats}")
-
-        return predicted_stats
+    scaled_prediction = nba_team_predictor_model.predict(preprocess_player_list(team_data))
     
-    except Exception as e:
-        print(f"[player_services] Error during ML prediction: {e}")
-        print("[player_services] Falling back to mock prediction")
-        return {
-            "Points": 110.5,
-            "Assists": 25.3,
-            "Rebounds": 45.2,
-            "Win %": 0.650,
-            "Chemistry Score": 75
-        }
+    prediction = y_scaler.inverse_transform(scaled_prediction)
+    
+    performance_labels = [
+    "Points", "Assists", "Rebounds", "Blocks", "Steals",
+    "Win %", "Conf Rank", "FGM", "FGA", "3PM", "3PA",
+    "FTM", "FTA", "OREB", "DREB", "Fouls", "Turnovers"
+    ]
+
+    adjusted_scaled_prediction = scaled_prediction.copy()
+
+    win_pct = adjusted_scaled_prediction[0, 5] * 1.2
+    print(adjusted_scaled_prediction[0, 5])
+    print("Win %:", win_pct)
+
+    # chemistry score is based on the win percentage
+    team_strength_percentage = win_pct * 100
+
+    # Round and clip chemistry score between 0 and 100
+    chemistry_score = int(round(team_strength_percentage))
+    chemistry_score = max(0, min(100, chemistry_score))
+
+    predicted_stats = {}
+
+    for j, label in enumerate(performance_labels):
+        predicted = float(prediction[0, j])
+        if label == "Win %":
+            predicted_stats[label] = round(predicted, 3)
+        elif label == "Conf Rank":
+            predicted_stats[label] = int(round(predicted))
+            print(round(predicted))
+            print(predicted)
+        else:
+            predicted_stats[label] = round(predicted, 1)
+    
+    # Calculate percentage stats
+    if "3PA" in predicted_stats and "3PM" in predicted_stats:
+        three_percent = (predicted_stats["3PM"] / predicted_stats["3PA"]) * 100 if predicted_stats["3PA"] > 0 else 0
+        predicted_stats["3P%"] = round(three_percent, 1)
+    if "FTA" in predicted_stats and "FTM" in predicted_stats:
+        ft_percent = (predicted_stats["FTM"] / predicted_stats["FTA"]) * 100 if predicted_stats["FTA"] > 0 else 0
+        predicted_stats["FT%"] = round(ft_percent, 1)
+    if "FGA" in predicted_stats and "FGM" in predicted_stats:
+        fg_percent = (predicted_stats["FGM"] / predicted_stats["FGA"]) * 100 if predicted_stats["FGA"] > 0 else 0
+        predicted_stats["FG%"] = round(fg_percent, 1)
+    
+    # Order the stats properly
+    ordered_stats = {}
+    for label in performance_labels:
+        if label in predicted_stats:
+            ordered_stats[label] = predicted_stats[label]
+        if label == "3PA" and "3P%" in predicted_stats:
+            ordered_stats["3P%"] = predicted_stats["3P%"]
+        if label == "FTA" and "FT%" in predicted_stats:
+            ordered_stats["FT%"] = predicted_stats["FT%"]
+        if label == "FGA" and "FG%" in predicted_stats:
+            ordered_stats["FG%"] = predicted_stats["FG%"]
+    predicted_stats = ordered_stats
+
+    predicted_stats["Chemistry Score"] = chemistry_score
+    print(f"Predicted Stats: {predicted_stats}")
+
+    return predicted_stats
 
 def get_all_teams() -> List[str]:
     """
